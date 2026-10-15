@@ -1,10 +1,36 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="halloween">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A Crew</title>
+<title>Qual seu número da sorte?</title>
+<meta name="description" content="Seis amigos, seis faces do dado. Gire e descubra quem é o seu número da sorte.">
+<meta name="theme-color" content="#0d0716">
+<!-- prévia do link (WhatsApp, iMessage, Instagram...): as URLs precisam ser absolutas -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://qualseunumerodasorte.party/">
+<meta property="og:site_name" content="Qual seu número da sorte?">
+<meta property="og:title" content="Qual seu número da sorte? 🎲">
+<meta property="og:description" content="Seis amigos, seis faces do dado. Gire e descubra quem é o seu.">
+<meta property="og:image" content="https://qualseunumerodasorte.party/og.jpg?v=1">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Qual seu número da sorte? A crew em seis fotos, cada uma com sua face do dado.">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- fotos dos cards: baixam já (antes do JS), e o Cloudflare manda como Early Hints.
+     Mesmo caminho e mesmo ?v= que o script monta, senão baixa duas vezes. -->
+<link rel="preload" as="image" href="fotos/igor.jpg?v=2">
+<link rel="preload" as="image" href="fotos/seibt.jpg?v=2">
+<link rel="preload" as="image" href="fotos/matheus.jpg?v=2">
+<link rel="preload" as="image" href="fotos/leonardo.jpg?v=2">
+<link rel="preload" as="image" href="fotos/gabriel.jpg?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 body { margin: 0; }
@@ -49,23 +75,23 @@ body {
 }
 main { max-width: 920px; margin: 0 auto; display: grid; gap: 36px; }
 
-header { display: grid; gap: 8px; }
+header { display: grid; gap: 20px; }
 h1 {
   margin: 0;
+  max-width: 13ch;
   font-weight: 800;
-  font-size: clamp(2.6rem, 9vw, 5rem);
+  font-size: clamp(2.4rem, 8vw, 4.6rem);
   line-height: .95;
   letter-spacing: -0.04em;
   text-wrap: balance;
 }
-header p { margin: 0; color: var(--muted); font-size: 1.05rem; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
-@media (max-width: 460px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+@media (max-width: 680px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
 
 .card {
   display: grid;
@@ -102,7 +128,8 @@ header p { margin: 0; color: var(--muted); font-size: 1.05rem; }
   overflow: hidden;
 }
 .card:hover .avatar { transform: rotate(-18deg); transition: transform .4s ease; }
-.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; animation: foto-in .3s ease; }
+@keyframes foto-in { from { opacity: 0; } }
 
 .photo { position: relative; }
 .die {
@@ -141,8 +168,6 @@ header p { margin: 0; color: var(--muted); font-size: 1.05rem; }
   letter-spacing: .12em;
   color: var(--accent);
 }
-
-footer { color: var(--muted); font-size: .85rem; }
 
 /* ---------- botão de girar ---------- */
 .roll-btn {
@@ -199,6 +224,8 @@ dialog:has(.reveal:not([hidden])) .modal-top h3 { visibility: hidden; }
 
 /* mesa de feltro */
 .table {
+  --giro: 2.4s;   /* duração do giro */
+  --frente: .5s;  /* tempo pra virar o resultado de frente */
   position: relative;
   height: 290px;
   margin: 16px;
@@ -228,22 +255,27 @@ dialog:has(.reveal:not([hidden])) .modal-top h3 { visibility: hidden; }
 .hop { transform-style: preserve-3d; }
 .scene {
   --s: 112px;
+  --b: 9px; /* chanfro das arestas */
   width: var(--s); height: var(--s);
   transform-style: preserve-3d;
   transform: rotateX(-16deg) rotateY(-20deg);
+  transition: transform var(--frente) cubic-bezier(.2,.7,.2,1);
 }
+/* dado parou: vira de frente e cresce um pouco pra ler o número */
+.frente .scene { transform: rotateX(0) rotateY(0) scale3d(1.15, 1.15, 1.15); }
 .cube {
   position: relative;
   width: 100%; height: 100%;
   transform-style: preserve-3d;
-  transition: transform 1.7s cubic-bezier(.16,.8,.24,1);
+  transition: transform var(--giro) cubic-bezier(.16,.8,.24,1);
 }
-.face, .core {
-  position: absolute; inset: 0;
+.face, .bevel, .corner, .core {
+  position: absolute; inset: 0; margin: auto;
   backface-visibility: hidden;
 }
 .face {
-  border-radius: 20%;
+  width: calc(var(--s) - 2 * var(--b) + .6px);
+  height: calc(var(--s) - 2 * var(--b) + .6px);
   background:
     radial-gradient(130% 130% at 25% 20%, #ffffff 0%, #f4efe6 45%, #ddd3c4 100%);
   box-shadow:
@@ -253,7 +285,7 @@ dialog:has(.reveal:not([hidden])) .modal-top h3 { visibility: hidden; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  padding: 16%;
+  padding: 12%;
   place-items: center;
 }
 .face i {
@@ -267,8 +299,14 @@ dialog:has(.reveal:not([hidden])) .modal-top h3 { visibility: hidden; }
   width: 92%;
   background: radial-gradient(circle at 40% 35%, #ff5c8a, #b3124d 70%);
 }
-/* núcleo que fecha as quinas arredondadas */
-.core { background: #d8cdbc; border-radius: 6%; backface-visibility: visible; }
+/* chanfros (12) e cantos (8) fecham o sólido: sem frestas nos vértices.
+   O núcleo (6 planos um pouco por dentro) faz qualquer emenda de anti-aliasing mostrar marfim, não o feltro. */
+.bevel, .corner { color: #e3ddd4; transition: color var(--giro) cubic-bezier(.16,.8,.24,1); }
+.frente .bevel, .frente .corner { transition-duration: var(--frente); }
+.bevel { background: currentColor; }
+.corner { overflow: visible; }
+.corner polygon { fill: currentColor; }
+.core { width: calc(var(--s) - 14px); height: calc(var(--s) - 14px); background: #e8e1d5; }
 
 .f1 { transform: translateZ(calc(var(--s) / 2)); }
 .f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
@@ -276,12 +314,9 @@ dialog:has(.reveal:not([hidden])) .modal-top h3 { visibility: hidden; }
 .f4 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
 .f2 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
 .f5 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
-.c1 { transform: translateZ(0); }
-.c2 { transform: rotateY(90deg); }
-.c3 { transform: rotateX(90deg); }
 
-.rolling .hop { animation: hop 1.7s cubic-bezier(.3,0,.3,1); }
-.rolling .shadow { animation: shade 1.7s cubic-bezier(.3,0,.3,1); }
+.rolling .hop { animation: hop var(--giro) cubic-bezier(.3,0,.3,1); }
+.rolling .shadow { animation: shade var(--giro) cubic-bezier(.3,0,.3,1); }
 @keyframes hop {
   0%   { transform: translate3d(-90px, 0, 0); }
   22%  { transform: translate3d(-40px, -110px, 0); }
@@ -316,13 +351,17 @@ dialog:has(.reveal:not([hidden])) .modal-top h3 { visibility: hidden; }
 .result .fade { animation: rise .35s ease; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 
-/* ---------- revelação do sorteado ---------- */
+/* ---------- perfil (sorteado pelo dado ou aberto pelo card) ---------- */
 dialog { position: fixed; }
+/* com o perfil aberto, a mesa sai e o pop-up cresce pra caber a foto grande */
+dialog:has(.reveal:not([hidden])) { overflow-y: auto; }
+dialog:has(.reveal:not([hidden])) :is(.table, .result) { display: none; }
+dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 auto; }
 .reveal {
-  position: absolute; inset: 0;
+  position: relative;
   z-index: 2;
   display: grid; place-items: center;
-  padding: 24px;
+  padding: 28px 24px 20px;
   background:
     radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--accent) 22%, var(--card)), var(--card) 70%);
   animation: reveal-in .45s cubic-bezier(.2,1.2,.4,1);
@@ -333,12 +372,21 @@ dialog { position: fixed; }
   font-family: var(--mono); font-size: .75rem; text-transform: uppercase;
   letter-spacing: .14em; color: var(--muted);
 }
-.reveal .photo { margin-block: 10px 14px; }
-.reveal .ring { width: 150px; margin-bottom: 0; animation: spin-in .9s cubic-bezier(.2,1,.3,1); }
-.reveal .avatar { font-size: 3.6rem; }
-.reveal .die { width: 54px; height: 54px; right: -14px; bottom: 4px; }
+/* foto em pé (3:4) com o cenário, levemente torta como foto impressa */
+.reveal .photo { margin-block: 14px 16px; }
+.reveal .ring {
+  --h: clamp(180px, 100dvh - 380px, 300px);
+  /* largura explícita: com width:auto a foto (540px) esticava o .photo e o dado ia parar longe */
+  width: calc(var(--h) * 3 / 4); height: var(--h);
+  margin-bottom: 0;
+  border-radius: 26px;
+  transform: rotate(-2deg);
+  animation: deal-in .7s cubic-bezier(.2,1.1,.3,1);
+}
+.reveal .avatar { border-radius: 22px; font-size: 4.6rem; }
+.reveal .die { width: 54px; height: 54px; right: -14px; bottom: -14px; }
 .reveal .pip { width: 8px; height: 8px; }
-@keyframes spin-in { from { transform: rotate(-120deg) scale(.6); } }
+@keyframes deal-in { from { transform: rotate(-16deg) translateY(30px) scale(.7); opacity: 0; } }
 .reveal h4 {
   margin: 0;
   font-size: clamp(2.2rem, 10vw, 3rem);
@@ -374,24 +422,204 @@ dialog { position: fixed; }
 .again:hover { color: var(--fg); }
 .again:focus-visible { outline: 2px solid var(--accent); border-radius: 10px; }
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .reveal .ring, .go-insta { animation: none !important; }
+  .reveal, .reveal .ring, .go-insta, .avatar img { animation: none !important; }
 }
 
 .card.hit { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
 
 @media (prefers-reduced-motion: reduce) {
   .card, .ring, .avatar, .die { transition: none !important; transform: none !important; }
-  .cube { transition-duration: .01s !important; }
+  .cube, .scene, .bevel, .corner { transition-duration: .01s !important; }
   .rolling .hop, .rolling .shadow { animation: none !important; }
+}
+
+/* ---------- Halloween (ligado por data-theme="halloween" no <html>; tira o atributo e o site volta ao normal) ----------
+   Ideias portadas do react-halloween (patorjk): Eyes (olhos que piscam e seguem o cursor),
+   Haunted (card brilha e solta fantasmas no hover) e MagicalText (título com gradiente que anda + faíscas). */
+:root[data-theme="halloween"] {
+  --bg: #0d0716; --card: #17102a; --line: #2d2047; --fg: #f6ecd9; --muted: #a999c4;
+  --accent: #ff7a1a; --glow: #8cff5a;
+  --die: #f6ecd9; --pip: #1a0f26;
+  --felt: #2a1442; --felt-hi: #4a2470; --felt-lo: #130820;
+  --ring: conic-gradient(from 210deg, #ff7a1a, #ff3d8b, #9b4dff, #8cff5a, #ff7a1a);
+  color-scheme: dark;
+}
+.night, .season, .spark, .web, .ghost { display: none; }
+[data-theme="halloween"] :is(.night, .season, .spark, .web, .ghost) { display: block; }
+
+/* céu: lua, estrelas, névoa, morcegos e olhos (camada fixa atrás do conteúdo) */
+.night {
+  position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+  background:
+    radial-gradient(55% 38% at 82% 10%, rgba(255,122,26,.16), transparent 70%),
+    radial-gradient(60% 45% at 10% 100%, rgba(140,255,90,.07), transparent 70%),
+    linear-gradient(180deg, #1c1033 0%, #130b24 45%, #0a0512 100%);
+}
+.stars {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 28% 9%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 41% 24%, #ffe9b8, transparent),
+    radial-gradient(1px 1px at 55% 7%, #fff, transparent),
+    radial-gradient(2px 2px at 66% 31%, #fff, transparent),
+    radial-gradient(1px 1px at 9% 44%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 33% 52%, #ffe9b8, transparent),
+    radial-gradient(1px 1px at 72% 48%, #fff, transparent),
+    radial-gradient(1px 1px at 88% 40%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 50% 38%, #fff, transparent),
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 94% 62%, #ffe9b8, transparent);
+  animation: twinkle 3.6s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { opacity: .45; } to { opacity: 1; } }
+.moon {
+  position: absolute; top: 5vh; right: 7vw;
+  width: clamp(84px, 13vw, 150px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 38% 36%, #fff4d6 0%, #ffcf7a 45%, #ff9a3c 100%);
+  box-shadow: 0 0 36px 8px rgba(255,170,80,.35), 0 0 110px 40px rgba(255,122,26,.16);
+}
+.moon::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background:
+    radial-gradient(10% 10% at 62% 30%, rgba(170,90,20,.35), transparent 70%),
+    radial-gradient(14% 14% at 40% 62%, rgba(170,90,20,.3), transparent 70%),
+    radial-gradient(7% 7% at 70% 66%, rgba(170,90,20,.3), transparent 70%);
+}
+.fog {
+  position: absolute; left: -30%; width: 160%; bottom: -8vh; height: 42vh;
+  background:
+    radial-gradient(45% 55% at 30% 65%, rgba(176,140,230,.20), transparent 70%),
+    radial-gradient(38% 50% at 72% 60%, rgba(140,255,90,.09), transparent 70%);
+  animation: fog 22s ease-in-out infinite alternate;
+}
+.fog.f2 {
+  bottom: -14vh; opacity: .7; animation-duration: 31s; animation-direction: alternate-reverse;
+  background: radial-gradient(40% 50% at 55% 60%, rgba(176,140,230,.16), transparent 70%);
+}
+@keyframes fog { from { transform: translate3d(-4%, 0, 0); } to { transform: translate3d(4%, 0, 0); } }
+@media (max-width: 680px) { .moon { top: 1vh; right: -8vw; width: 104px; } }
+
+.bat {
+  position: absolute; left: 0; top: var(--y, 10vh); width: var(--w, 32px);
+  animation: fly var(--t, 20s) linear infinite; animation-delay: var(--d, 0s);
+}
+.bat.volta { animation-direction: reverse; }
+.bat .bob { display: block; animation: bob 2.4s ease-in-out infinite alternate; }
+.bat svg { display: block; width: 100%; fill: #06030c; transform-origin: 50% 40%; animation: flap .32s ease-in-out infinite alternate; }
+@keyframes fly { from { transform: translate3d(-15vw, 0, 0); } to { transform: translate3d(115vw, -6vh, 0); } }
+@keyframes bob { to { transform: translateY(14px); } }
+@keyframes flap { from { transform: scaleY(1); } to { transform: scaleY(.45); } }
+
+.eyes { position: absolute; display: flex; gap: calc(var(--sz) * .45); --px: 0px; --py: 0px; }
+.eye {
+  position: relative; width: var(--sz); height: calc(var(--sz) * .62); border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, #fff6cf, #ffb340 70%, #ff8a1f);
+  box-shadow: 0 0 calc(var(--sz) * .6) rgba(255,170,60,.65);
+  animation: blink 6s ease-in-out infinite; animation-delay: var(--b, 0s);
+}
+.eye::after { /* pupila: segue o ponteiro via --px/--py (JS) */
+  content: ""; position: absolute; left: 50%; top: 50%; width: 36%; height: 60%; border-radius: 50%;
+  background: #1a0f26;
+  transform: translate(calc(-50% + var(--px)), calc(-50% + var(--py)));
+  transition: transform .12s linear;
+}
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+
+/* cabeçalho: tag da edição, título mágico e faíscas */
+.season { font-family: var(--mono); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.title { position: relative; width: fit-content; }
+[data-theme="halloween"] h1 {
+  padding-right: .08em;
+  background: linear-gradient(90deg, #ff7a1a, #ff3d8b 28%, #b06bff 52%, #8cff5a 76%, #ff7a1a);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+  animation: magic 7s linear infinite;
+}
+@keyframes magic { to { background-position: -300% 0; } }
+.spark {
+  position: absolute; font-style: normal; line-height: 1; font-size: 1.1rem;
+  color: #fff3c9; text-shadow: 0 0 10px #ffd27a;
+  transform: scale(0); animation: spark 2.6s ease-in-out infinite;
+}
+.spark:nth-of-type(1) { left: -.2em; top: -.7em; }
+.spark:nth-of-type(2) { right: -1em; top: -.2em; animation-delay: .7s; font-size: .85rem; }
+.spark:nth-of-type(3) { right: 28%; bottom: -.6em; animation-delay: 1.4s; font-size: .7rem; }
+.spark:nth-of-type(4) { left: 38%; top: -.9em; animation-delay: 2s; font-size: .9rem; }
+@keyframes spark { 0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { transform: scale(1) rotate(90deg); opacity: 1; } }
+
+/* cards assombrados: teia no canto, brilho e fantasmas no hover */
+[data-theme="halloween"] .card { position: relative; transition: transform .18s ease, border-color .18s ease, box-shadow .25s ease; }
+[data-theme="halloween"] .card:hover, [data-theme="halloween"] .card:focus-visible {
+  z-index: 2;
+  box-shadow: 0 14px 40px -12px rgba(255,122,26,.55), 0 0 50px -16px var(--glow);
+}
+.web { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.web svg { position: absolute; top: -1px; left: -1px; width: 72px; height: 72px; fill: none; stroke: var(--muted); stroke-width: 1; opacity: .3; }
+.ghost { position: absolute; left: 50%; top: 26%; z-index: 3; width: 24px; margin-left: -12px; opacity: 0; pointer-events: none; }
+.ghost svg { display: block; width: 100%; filter: drop-shadow(0 0 6px rgba(255,255,255,.55)); }
+.ghost.g1 { --dx: -42px; }
+.ghost.g2 { --dx: 6px; --d: .18s; }
+.ghost.g3 { --dx: 46px; --d: .36s; }
+.card:hover .ghost, .card:focus-visible .ghost { animation: fly-out 1.5s ease-out both; animation-delay: var(--d, 0s); }
+@keyframes fly-out {
+  0%   { opacity: 0; transform: translate3d(0, 0, 0) scale(.4); }
+  12%  { opacity: .95; }
+  50%  { transform: translate3d(calc(var(--dx) * .5), -70px, 0) rotate(-8deg) scale(1); }
+  100% { opacity: 0; transform: translate3d(var(--dx), -150px, 0) rotate(8deg) scale(1.05); }
+}
+
+/* botão-abóbora */
+[data-theme="halloween"] .roll-btn {
+  color: #1a0f26;
+  background: linear-gradient(180deg, #ffb063, #ff7a1a 60%, #f0640a);
+  box-shadow: 0 4px 0 #9a3d05, 0 12px 30px -10px rgba(255,122,26,.8);
+}
+[data-theme="halloween"] .roll-btn:hover { box-shadow: 0 6px 0 #9a3d05, 0 16px 36px -10px rgba(255,122,26,.9); }
+[data-theme="halloween"] .roll-btn:active { box-shadow: 0 1px 0 #9a3d05; }
+[data-theme="halloween"] .roll-btn::after { content: "🎃"; font-size: 1.15em; }
+[data-theme="halloween"] .roll-btn .mini { background: #1a0f26; }
+[data-theme="halloween"] .roll-btn .mini span.on { background: #ffd27a; }
+
+/* mesa de veludo com brilho de bruxa quando o dado pousa */
+[data-theme="halloween"] dialog { background: linear-gradient(180deg, #1b1230, #130c22); box-shadow: 0 30px 80px -20px rgba(0,0,0,.8); }
+[data-theme="halloween"] dialog::backdrop { background: rgba(8, 4, 14, .72); }
+[data-theme="halloween"] .table::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(42% 42% at 50% 52%, rgba(140,255,90,.38), transparent 70%);
+  opacity: 0; transition: opacity .7s ease;
+}
+[data-theme="halloween"] .table.frente::before { opacity: 1; }
+[data-theme="halloween"] .go-insta {
+  background-image: linear-gradient(100deg, #ff7a1a, #ff3d8b 40%, #9b4dff 75%, #8cff5a);
+  box-shadow: 0 10px 24px -8px rgba(255,122,26,.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bat, .bat .bob, .bat svg, .fog, .stars, .spark, .eye, .ghost, [data-theme="halloween"] h1 { animation: none !important; }
+  .bat { display: none !important; }
+  .spark { opacity: .8; transform: none; }
+  .eye::after { transition: none; }
 }
 </style>
 </head>
 <body>
 
+<div class="night" aria-hidden="true">
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <div class="fog f1"></div>
+  <div class="fog f2"></div>
+</div>
+
 <main>
   <header>
-    <h1>A Crew</h1>
-    <p>Toca no card e cai direto no insta.</p>
+    <span class="season">Edição Halloween 🎃</span>
+    <div class="title">
+      <h1>Qual seu número da sorte?</h1>
+      <i class="spark" aria-hidden="true">✦</i><i class="spark" aria-hidden="true">✦</i><i class="spark" aria-hidden="true">✦</i><i class="spark" aria-hidden="true">✦</i>
+    </div>
     <button class="roll-btn" id="open-roll" type="button">
       <span class="mini" aria-hidden="true"><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span></span>
       Girar o dado
@@ -399,8 +627,6 @@ dialog { position: fixed; }
   </header>
 
   <section class="grid" id="cards"></section>
-
-  <footer>Fotos entram no lugar das iniciais quando forem adicionadas.</footer>
 </main>
 
 <dialog id="roll-dialog" aria-labelledby="roll-title">
@@ -424,6 +650,8 @@ dialog { position: fixed; }
 
 <script>
 const pessoas = [
+  { nome: "Ian",      insta: "i.m.zanini",       dado: 1 },
+  { nome: "Igor",     insta: "igor_bcs",         dado: 2 },
   { nome: "Seibt",    insta: "seibt0_",          dado: 3 },
   { nome: "Matheus",  insta: "matheus.mariussi", dado: 4 },
   { nome: "Leonardo", insta: "trojan.yaml",      dado: 5 },
@@ -435,9 +663,19 @@ const faces = {
   1: [4], 2: [0, 8], 3: [0, 4, 8],
   4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8],
 };
+// Versão das fotos: aumente quando trocar alguma, pra ninguém ficar com a antiga no cache
+// (e lembre do <link rel="preload"> no <head>, que usa o mesmo número)
+const FOTOS_V = 2;
+const foto = caminho => `${caminho}?v=${FOTOS_V}`;
+
 const dado = n => `<div class="die" role="img" aria-label="Dado: ${n}">` +
   Array.from({ length: 9 }, (_, i) => `<span class="pip${faces[n].includes(i) ? " on" : ""}"></span>`).join("") +
   `</div>`;
+
+const assombrado = document.documentElement.dataset.theme === "halloween";
+const teia = `<span class="web"><svg viewBox="0 0 72 72" aria-hidden="true"><path d="M0 0L72 0M0 0L0 72M0 0L66 27M0 0L27 66M0 0L50 50"/><path d="M18 0Q17 9 0 18M36 0Q33 19 0 36M54 0Q49 29 0 54M70 0Q65 40 0 70"/></svg></span>`;
+const fantasma = `<svg viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1C6.5 1 2 5.9 2 12v14l3.3-2.6L8.7 26l3.3-2.6 3.3 2.6 3.4-2.6L22 26V12C22 5.9 17.5 1 12 1z" fill="#fff"/><circle cx="8.8" cy="11" r="1.7" fill="#1a0f26"/><circle cx="15.2" cy="11" r="1.7" fill="#1a0f26"/></svg>`;
+const decoCard = assombrado ? teia + ["g1", "g2", "g3"].map(g => `<span class="ghost ${g}">${fantasma}</span>`).join("") : "";
 
 const grid = document.getElementById("cards");
 for (const p of pessoas) {
@@ -446,10 +684,17 @@ for (const p of pessoas) {
   a.href = `https://www.instagram.com/${p.insta}/`;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
-  a.setAttribute("aria-label", `${p.nome}, dado ${p.dado}: Instagram @${p.insta}`);
-  a.innerHTML = `
+  a.setAttribute("aria-label", `${p.nome}, dado ${p.dado}: ver perfil`);
+  a.setAttribute("aria-haspopup", "dialog");
+  // clique normal abre o perfil; cmd/ctrl/shift-clique continua indo direto pro insta
+  a.addEventListener("click", e => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    abrirPerfil(p);
+  });
+  a.innerHTML = `${decoCard}
     <div class="photo">
-      <div class="ring"><div class="avatar" data-foto="fotos/${p.nome.toLowerCase()}.jpg">${p.nome[0]}</div></div>
+      <div class="ring"><div class="avatar" data-foto="${foto(`fotos/${p.nome.toLowerCase()}.jpg`)}">${p.nome[0]}</div></div>
       ${dado(p.dado)}
     </div>
     <h2>${p.nome}</h2>
@@ -465,15 +710,85 @@ const parts = [1, 2, 3, 4, 5, 6].map(n =>
   `<div class="face f${n}">` +
   Array.from({ length: 9 }, (_, i) => `<i class="${faces[n].includes(i) ? "on" : ""}"></i>`).join("") +
   `</div>`).join("");
-cube.innerHTML = `<div class="core c1"></div><div class="core c2"></div><div class="core c3"></div>` + parts;
+
+// chanfros e cantos: fecham o cubo como um sólido (as faces sozinhas deixavam frestas nos vértices)
+const scene = document.querySelector(".scene");
+const S = parseFloat(getComputedStyle(scene).getPropertyValue("--s")) || 112;
+const B = parseFloat(getComputedStyle(scene).getPropertyValue("--b")) || 9;
+const H = S / 2, F = S - 2 * B;
+const add = (a, b) => a.map((c, i) => c + b[i]);
+const sub = (a, b) => a.map((c, i) => c - b[i]);
+const mul = (a, k) => a.map(c => c * k);
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const unit = a => mul(a, 1 / Math.hypot(...a));
+const px = n => +n.toFixed(3);
+// colunas: eixo x local, eixo y local, normal (pra fora), centro
+const matrix3d = (u, v, n, c) => `matrix3d(${[...u, 0, ...v, 0, ...n, 0, ...c, 1].map(px).join(",")})`;
+const eixos = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+
+let pecas = "";
+for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) {
+  const n1 = eixos[i], n2 = eixos[j];
+  if (dot(n1, n2) !== 0) continue; // faces opostas não têm aresta em comum
+  const u = cross(n1, n2), v = unit(sub(n1, n2)), n = unit(add(n1, n2));
+  const c = mul(add(n1, n2), H - B / 2);
+  pecas += `<div class="bevel" data-n="${n.join(" ")}" style="width:${px(F + 1)}px;height:${px(B * Math.SQRT2 + .8)}px;transform:${matrix3d(u, v, n, c)}"></div>`;
+}
+for (const sx of [1, -1]) for (const sy of [1, -1]) for (const sz of [1, -1]) {
+  const Pz = [sx * (H - B), sy * (H - B), sz * H];
+  const Px = [sx * H, sy * (H - B), sz * (H - B)];
+  const Py = [sx * (H - B), sy * H, sz * (H - B)];
+  const G = mul(add(add(Px, Py), Pz), 1 / 3);
+  const n = unit([sx, sy, sz]), u = unit(sub(Px, Py)), v = cross(n, u);
+  const D = Math.ceil(B * Math.SQRT2) + 2;
+  const pts = [Pz, Px, Py].map(P => {
+    const d = mul(sub(P, G), 1.1); // leve sobra pra esconder a emenda
+    return `${px(D / 2 + dot(d, u))},${px(D / 2 + dot(d, v))}`;
+  });
+  // triângulo em SVG (e não clip-path): se comporta igual em todo browser dentro do preserve-3d
+  pecas += `<svg class="corner" data-n="${n.join(" ")}" viewBox="0 0 ${D} ${D}" style="width:${D}px;height:${D}px;transform:${matrix3d(u, v, n, G)}" aria-hidden="true"><polygon points="${pts.join(" ")}"/></svg>`;
+}
+for (const n of eixos) { // núcleo
+  const u = Math.abs(n[1]) === 1 ? [1, 0, 0] : unit(cross([0, 1, 0], n));
+  pecas += `<div class="core" style="transform:${matrix3d(u, cross(n, u), n, mul(n, H - 7))}"></div>`;
+}
+cube.innerHTML = parts + pecas;
+
+// luz fixa na tela (de cima, da esquerda, da frente): o tom de cada chanfro segue a orientação final do dado
+const luz = unit([-0.35, -0.75, 0.55]);
+const rad = d => d * Math.PI / 180;
+function girarVetor([x, y, z], ax, ay) { // mesma ordem do CSS: rotateX(ax) rotateY(ay)
+  const cy = Math.cos(ay), sy = Math.sin(ay);
+  const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+  const cx = Math.cos(ax), sx = Math.sin(ax);
+  return [x1, y * cx - z1 * sx, y * sx + z1 * cx];
+}
+function sombrear(ax, ay, tx = -16, ty = -20) { // tx/ty: inclinação da cena (0 quando está de frente)
+  cube.querySelectorAll("[data-n]").forEach(el => {
+    const n = el.dataset.n.split(" ").map(Number);
+    const nw = girarVetor(girarVetor(n, rad(ax), rad(ay)), rad(tx), rad(ty)); // cubo, depois a inclinação da cena
+    const t = Math.min(1, Math.max(0, 0.5 + 0.5 * dot(nw, luz)));
+    const mix = (a, b) => Math.round(a + (b - a) * t);
+    el.style.color = `rgb(${mix(199, 255)}, ${mix(188, 255)}, ${mix(170, 253)})`;
+  });
+}
+sombrear(0, 0);
 
 // rotação que traz cada face para frente
 const alvo = { 1: [0, 0], 6: [0, 180], 3: [0, -90], 4: [0, 90], 2: [-90, 0], 5: [90, 0] };
-let rx = 0, ry = 0, rolando = false;
+let rx = 0, ry = 0, rolando = false, timer;
 
 const dialog = document.getElementById("roll-dialog");
 const table = document.getElementById("table");
 const result = document.getElementById("result");
+
+// tempos: giro e virada vêm do CSS (--giro, --frente); a pausa com o número de frente é só daqui
+const ms = v => parseFloat(v) * (/ms\s*$/.test(v) ? 1 : 1000);
+const T_GIRO = ms(getComputedStyle(table).getPropertyValue("--giro")) || 2400;
+const T_FRENTE = ms(getComputedStyle(table).getPropertyValue("--frente")) || 500;
+const T_MOSTRA = 1500;
+const reduzido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function voltas(atual, destino, min) {
   // próximo ângulo >= atual + min*360 que termina no destino
@@ -488,22 +803,30 @@ function girar() {
   document.querySelectorAll(".card.hit").forEach(c => c.classList.remove("hit"));
   const n = 1 + Math.floor(Math.random() * 6);
   const [tx, ty] = alvo[n];
-  rx = voltas(rx, tx, 2 + Math.floor(Math.random() * 2));
-  ry = voltas(ry, ty, 2 + Math.floor(Math.random() * 2));
+  rx = voltas(rx, tx, 3 + Math.floor(Math.random() * 2));
+  ry = voltas(ry, ty, 3 + Math.floor(Math.random() * 2));
   result.innerHTML = `<span class="label">Rolando…</span>`;
 
-  table.classList.remove("rolling");
+  table.classList.remove("rolling", "frente");
   void table.offsetWidth; // reinicia a animação do pulo
   table.classList.add("rolling");
   cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+  sombrear(rx, ry);
 
-  const reduz = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  setTimeout(() => mostrar(n), reduz ? 50 : 1750);
+  clearTimeout(timer);
+  timer = setTimeout(() => pousar(n), reduzido() ? 50 : T_GIRO);
+}
+
+function pousar(n) { // o dado parou: vira de frente, mostra o número por um tempo e só então chama a pessoa
+  table.classList.remove("rolling");
+  table.classList.add("frente");
+  sombrear(rx, ry, 0, 0);
+  result.innerHTML = `<div class="fade"><span class="label">Caiu ${n}</span></div>`;
+  timer = setTimeout(() => mostrar(n), reduzido() ? T_MOSTRA : T_FRENTE + T_MOSTRA);
 }
 
 function mostrar(n) {
   rolando = false;
-  table.classList.remove("rolling");
   const p = pessoas.find(x => x.dado === n);
   if (p) {
     result.innerHTML = `<div class="fade">
@@ -512,7 +835,7 @@ function mostrar(n) {
       <a href="https://www.instagram.com/${p.insta}/" target="_blank" rel="noopener noreferrer">@${p.insta} →</a>
     </div>`;
     document.querySelector(`.card[data-dado="${n}"]`)?.classList.add("hit");
-    timerReveal = setTimeout(() => revelar(p), 650);
+    revelar(p);
   } else {
     result.innerHTML = `<div class="fade">
       <span class="label">Caiu ${n}</span>
@@ -523,30 +846,44 @@ function mostrar(n) {
 }
 
 const reveal = document.getElementById("reveal");
-let timerReveal;
 const instaIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`;
 
-function revelar(p) {
+// sorteado = veio do dado; senão foi aberto tocando no card
+function revelar(p, sorteado = true) {
+  const slug = p.nome.toLowerCase();
   reveal.innerHTML = `<div class="reveal-inner">
-    <span class="tag">O dado escolheu · ${p.dado}</span>
+    <span class="tag">${assombrado ? "🎃 " : ""}${sorteado ? `O dado escolheu · ${p.dado}` : `Face ${p.dado} do dado`}</span>
     <div class="photo">
-      <div class="ring"><div class="avatar" data-foto="fotos/${p.nome.toLowerCase()}.jpg">${p.nome[0]}</div></div>
+      <div class="ring"><div class="avatar" data-foto="${foto(`fotos/cena/${slug}.jpg`)}" data-reserva="${foto(`fotos/${slug}.jpg`)}">${p.nome[0]}</div></div>
       ${dado(p.dado)}
     </div>
-    <h4>${p.nome}</h4>
+    <h4 id="perfil-nome">${p.nome}</h4>
     <span class="handle">@${p.insta}</span>
-    <a class="go-insta" href="https://www.instagram.com/${p.insta}/" target="_blank" rel="noopener noreferrer">${instaIcon} Ir ao insta?</a>
-    <button class="again" id="again" type="button">Jogar de novo</button>
+    <a class="go-insta" href="https://www.instagram.com/${p.insta}/" target="_blank" rel="noopener noreferrer">${instaIcon} Insta?</a>
+    <button class="again" id="again" type="button">${sorteado ? "Jogar de novo" : "Girar o dado"}</button>
   </div>`;
   reveal.hidden = false;
+  dialog.setAttribute("aria-labelledby", "perfil-nome");
   reveal.querySelector(".go-insta").focus();
   document.getElementById("again").addEventListener("click", () => {
     reveal.hidden = true;
+    dialog.setAttribute("aria-labelledby", "roll-title");
     girar();
   });
 }
 
-dialog.addEventListener("close", () => { clearTimeout(timerReveal); reveal.hidden = true; });
+function abrirPerfil(p) {
+  dialog.showModal();
+  revelar(p, false);
+}
+
+dialog.addEventListener("close", () => {
+  clearTimeout(timer);
+  rolando = false;
+  table.classList.remove("rolling", "frente");
+  reveal.hidden = true;
+  dialog.setAttribute("aria-labelledby", "roll-title");
+});
 
 document.getElementById("open-roll").addEventListener("click", () => {
   reveal.hidden = true;
@@ -559,21 +896,86 @@ table.addEventListener("click", girar);
 table.addEventListener("keydown", e => {
   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); girar(); }
 });
+
+/* ---------- Halloween: morcegos e olhos que seguem o ponteiro ---------- */
+if (assombrado) {
+  const night = document.querySelector(".night");
+  const morcego = `<span class="bob"><svg viewBox="0 0 100 40" aria-hidden="true"><path d="M46 10 44 3 49 9 51 9 56 3 54 10 C62 5 80 4 98 12 C90 16 88 22 92 30 C84 24 78 26 74 34 C70 28 64 28 60 34 C56 37 44 37 40 34 C36 28 30 28 26 34 C22 26 16 24 8 30 C12 22 10 16 2 12 C20 4 38 5 46 10Z"/></svg></span>`;
+  const morcegos = [
+    { y: "9vh",  w: "40px", t: "19s", d: "-4s" },
+    { y: "15vh", w: "30px", t: "27s", d: "-12s", volta: true },
+    { y: "24vh", w: "48px", t: "23s", d: "-9s" },
+    { y: "33vh", w: "26px", t: "31s", d: "-20s", volta: true },
+  ];
+  const pares = [ // pares de olhos escondidos no escuro
+    { left: "52vw", top: "6vh", sz: 14, b: "1.3s" },
+    { right: "5vw", top: "56vh", sz: 18, b: "3.1s" },
+    { left: "6vw", bottom: "7vh", sz: 15, b: "4.6s" },
+  ];
+  night.insertAdjacentHTML("beforeend",
+    morcegos.map(m => `<div class="bat${m.volta ? " volta" : ""}" style="--y:${m.y};--w:${m.w};--t:${m.t};--d:${m.d}">${morcego}</div>`).join("") +
+    pares.map(o => `<div class="eyes" style="${["left", "right", "top", "bottom"].filter(k => o[k]).map(k => `${k}:${o[k]}`).join(";")};--sz:${o.sz}px;--b:${o.b}"><span class="eye"></span><span class="eye"></span></div>`).join(""));
+
+  const olhos = [...night.querySelectorAll(".eyes")];
+  let mira = null, pedido = 0;
+  const olhar = () => {
+    pedido = 0;
+    for (const par of olhos) {
+      const r = par.getBoundingClientRect();
+      const dx = mira.x - (r.left + r.width / 2), dy = mira.y - (r.top + r.height / 2);
+      const d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 220) * r.height * .42;
+      par.style.setProperty("--px", `${(dx / d * k).toFixed(1)}px`);
+      par.style.setProperty("--py", `${(dy / d * k).toFixed(1)}px`);
+    }
+  };
+  const mirar = e => { mira = { x: e.clientX, y: e.clientY }; pedido ||= requestAnimationFrame(olhar); };
+  addEventListener("pointermove", mirar, { passive: true });
+  addEventListener("pointerdown", mirar, { passive: true });
+}
 </script>
 
 <script>
-// Troca a inicial pela foto quando fotos/<nome>.jpg existir
+// Troca a inicial pela foto quando ela existir (data-reserva é tentada se data-foto faltar).
+// Se falhar (rede instável, resposta velha no cache), tenta mais uma vez furando o cache antes de desistir.
+const NOVA_TENTATIVA_MS = 800;
+const semCache = src => { const u = new URL(src, location.href); u.searchParams.set("r", Date.now()); return u.href; };
 function carregarFoto(av) {
   if (av.dataset.loaded) return;
   av.dataset.loaded = "1";
+  const fontes = [av.dataset.foto, av.dataset.reserva].filter(Boolean);
+  let i = 0, repetiu = false;
   const img = new Image();
   img.alt = "";
+  img.decoding = "async";
   img.onload = () => { av.textContent = ""; av.appendChild(img); };
-  img.src = av.dataset.foto;
+  img.onerror = () => {
+    if (!repetiu) {
+      repetiu = true;
+      setTimeout(() => { img.src = semCache(fontes[i]); }, NOVA_TENTATIVA_MS);
+    } else if (++i < fontes.length) {
+      repetiu = false;
+      img.src = fontes[i];
+    }
+  };
+  img.src = fontes[0];
 }
 document.querySelectorAll(".avatar[data-foto]").forEach(carregarFoto);
 new MutationObserver(() => document.querySelectorAll(".avatar[data-foto]").forEach(carregarFoto))
   .observe(document.body, { childList: true, subtree: true });
+
+// Com a página carregada, já baixa as fotos grandes do perfil: abrir um card fica instantâneo
+const guardadas = [];
+addEventListener("load", () => {
+  if (navigator.connection?.saveData) return;
+  const depois = window.requestIdleCallback || (fn => setTimeout(fn, 300));
+  depois(() => {
+    for (const p of pessoas) {
+      const img = new Image();
+      img.src = foto(`fotos/cena/${p.nome.toLowerCase()}.jpg`);
+      guardadas.push(img); // segura a referência pro navegador não cancelar o download
+    }
+  });
+});
 </script>
 </body>
 </html>
