@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Crew</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+/* Layout: título grande alinhado à esquerda, grade de cards tipo perfil, anel de stories em volta da foto */
+:root {
+  --bg: #f6f3f7;
+  --card: #ffffff;
+  --line: #e4dde8;
+  --fg: #1d1621;
+  --muted: #6f6475;
+  --accent: #d62976;
+  --die: #ffffff;
+  --pip: #1d1621;
+  --felt: #17603f;
+  --felt-hi: #2a8a5d;
+  --felt-lo: #0c3a25;
+  --ring: conic-gradient(from 210deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75);
+  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --mono: "DM Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141016; --card: #1e1922; --line: #302838; --fg: #f3eef5; --muted: #a99fb0; --accent: #f0569a; --die: #f3eef5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141016; --card: #1e1922; --line: #302838; --fg: #f3eef5; --muted: #a99fb0; --accent: #f0569a; --die: #f3eef5;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--display);
+  padding-inline: 16px;
+  padding-block: 48px 64px;
+}
+main { max-width: 920px; margin: 0 auto; display: grid; gap: 36px; }
+
+header { display: grid; gap: 8px; }
+h1 {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 9vw, 5rem);
+  line-height: .95;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+header p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+}
+@media (max-width: 460px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+
+.card {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding-block: 28px 22px;
+  padding-inline: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  color: inherit;
+  text-decoration: none;
+  transition: transform .18s ease, border-color .18s ease;
+}
+.card:hover, .card:focus-visible { transform: translateY(-4px); border-color: var(--accent); }
+.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.ring {
+  width: 112px; aspect-ratio: 1; max-width: 100%;
+  border-radius: 50%;
+  padding: 4px;
+  background: var(--ring);
+  margin-bottom: 14px;
+  transition: transform .4s ease;
+}
+.card:hover .ring { transform: rotate(18deg); }
+.avatar {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  border: 4px solid var(--card);
+  background: var(--bg);
+  display: grid; place-items: center;
+  font-size: 2.6rem; font-weight: 800;
+  overflow: hidden;
+}
+.card:hover .avatar { transform: rotate(-18deg); transition: transform .4s ease; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.photo { position: relative; }
+.die {
+  position: absolute;
+  right: -10px; bottom: 6px;
+  width: 44px; height: 44px;
+  padding: 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  place-items: center;
+  background: var(--die);
+  border: 2px solid var(--pip);
+  border-radius: 10px;
+  box-shadow: 0 3px 0 var(--pip);
+  transform: rotate(-10deg);
+  transition: transform .4s ease;
+}
+.card:hover .die { transform: rotate(80deg) scale(1.08); }
+.pip { width: 7px; height: 7px; border-radius: 50%; background: transparent; }
+.pip.on { background: var(--pip); }
+
+.card h2 { margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+.handle {
+  font-family: var(--mono);
+  font-size: .82rem;
+  color: var(--muted);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.cta {
+  margin-top: 12px;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--accent);
+}
+
+footer { color: var(--muted); font-size: .85rem; }
+
+/* ---------- botão de girar ---------- */
+.roll-btn {
+  justify-self: start;
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-top: 8px;
+  padding: 12px 20px 12px 14px;
+  font: 800 1rem var(--display);
+  color: var(--die);
+  background: var(--pip);
+  border: 0; border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--accent);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.roll-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--accent); }
+.roll-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent); }
+.roll-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.roll-btn .mini {
+  width: 26px; height: 26px; border-radius: 7px; background: var(--die);
+  display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr);
+  padding: 4px; place-items: center;
+}
+.roll-btn .mini span { width: 4px; height: 4px; border-radius: 50%; }
+.roll-btn .mini span.on { background: var(--pip); }
+
+/* ---------- pop-up ---------- */
+dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--card);
+  color: var(--fg);
+  overflow: hidden;
+}
+dialog::backdrop { background: rgba(20, 12, 24, .62); backdrop-filter: blur(6px); }
+dialog[open] { animation: pop .28s cubic-bezier(.2,1.3,.4,1); }
+@keyframes pop { from { transform: scale(.9); opacity: 0; } }
+
+.modal-top {
+  position: relative; z-index: 3;
+  display: flex; justify-content: space-between; align-items: center;
+  padding-block: 18px 0; padding-inline: 22px;
+}
+.modal-top h3 { margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; }
+dialog:has(.reveal:not([hidden])) .modal-top h3 { visibility: hidden; }
+.close {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--line); background: transparent; color: var(--fg);
+  font-size: 1.2rem; cursor: pointer;
+}
+.close:focus-visible { outline: 2px solid var(--accent); }
+
+/* mesa de feltro */
+.table {
+  position: relative;
+  height: 290px;
+  margin: 16px;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 90% at 50% 40%, var(--felt-hi), var(--felt) 60%, var(--felt-lo));
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.25), inset 0 10px 40px rgba(0,0,0,.45);
+  display: grid; place-items: center;
+  perspective: 900px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.table::after { /* textura sutil */
+  content: ""; position: absolute; inset: 0; opacity: .18; pointer-events: none;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 2px, transparent 2px 4px);
+}
+
+.shadow {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 130px; height: 40px;
+  margin-left: -65px; margin-top: 52px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0));
+  filter: blur(4px);
+}
+.hop { transform-style: preserve-3d; }
+.scene {
+  --s: 112px;
+  width: var(--s); height: var(--s);
+  transform-style: preserve-3d;
+  transform: rotateX(-16deg) rotateY(-20deg);
+}
+.cube {
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1.7s cubic-bezier(.16,.8,.24,1);
+}
+.face, .core {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+}
+.face {
+  border-radius: 20%;
+  background:
+    radial-gradient(130% 130% at 25% 20%, #ffffff 0%, #f4efe6 45%, #ddd3c4 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.7),
+    inset -6px -8px 16px rgba(120, 95, 70, .28),
+    inset 5px 6px 12px rgba(255,255,255,.9);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 16%;
+  place-items: center;
+}
+.face i {
+  width: 68%; aspect-ratio: 1; border-radius: 50%;
+  visibility: hidden;
+  background: radial-gradient(circle at 40% 35%, #3a2b40, #120a16 70%);
+  box-shadow: inset 0 3px 3px rgba(0,0,0,.7), 0 1px 0 rgba(255,255,255,.9);
+}
+.face i.on { visibility: visible; }
+.face.f1 i.on { /* o 1 vermelho, como nos dados de cassino */
+  width: 92%;
+  background: radial-gradient(circle at 40% 35%, #ff5c8a, #b3124d 70%);
+}
+/* núcleo que fecha as quinas arredondadas */
+.core { background: #d8cdbc; border-radius: 6%; backface-visibility: visible; }
+
+.f1 { transform: translateZ(calc(var(--s) / 2)); }
+.f6 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.f3 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.f4 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.f2 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.f5 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+.c1 { transform: translateZ(0); }
+.c2 { transform: rotateY(90deg); }
+.c3 { transform: rotateX(90deg); }
+
+.rolling .hop { animation: hop 1.7s cubic-bezier(.3,0,.3,1); }
+.rolling .shadow { animation: shade 1.7s cubic-bezier(.3,0,.3,1); }
+@keyframes hop {
+  0%   { transform: translate3d(-90px, 0, 0); }
+  22%  { transform: translate3d(-40px, -110px, 0); }
+  44%  { transform: translate3d(10px, 0, 0); }
+  58%  { transform: translate3d(25px, -38px, 0); }
+  72%  { transform: translate3d(12px, 0, 0); }
+  82%  { transform: translate3d(6px, -10px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes shade {
+  0%   { transform: translateX(-90px) scale(1); opacity: 1; }
+  22%  { transform: translateX(-40px) scale(.45); opacity: .35; }
+  44%  { transform: translateX(10px) scale(1.05); opacity: 1; }
+  58%  { transform: translateX(25px) scale(.75); opacity: .7; }
+  72%  { transform: translateX(12px) scale(1); opacity: 1; }
+  82%  { transform: translateX(6px) scale(.92); opacity: .9; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+.result {
+  min-height: 92px;
+  padding-inline: 22px; padding-block: 0 22px;
+  display: grid; gap: 6px; align-content: start;
+}
+.result .label {
+  font-family: var(--mono); font-size: .75rem; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--muted);
+}
+.result .who { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+.result a { color: var(--accent); font-weight: 500; text-decoration: none; }
+.result a:hover { text-decoration: underline; }
+.result .fade { animation: rise .35s ease; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---------- revelação do sorteado ---------- */
+dialog { position: fixed; }
+.reveal {
+  position: absolute; inset: 0;
+  z-index: 2;
+  display: grid; place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--accent) 22%, var(--card)), var(--card) 70%);
+  animation: reveal-in .45s cubic-bezier(.2,1.2,.4,1);
+}
+@keyframes reveal-in { from { opacity: 0; transform: translateY(24px) scale(.96); } }
+.reveal-inner { display: grid; justify-items: center; gap: 6px; text-align: center; width: 100%; }
+.reveal .tag {
+  font-family: var(--mono); font-size: .75rem; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--muted);
+}
+.reveal .photo { margin-block: 10px 14px; }
+.reveal .ring { width: 150px; margin-bottom: 0; animation: spin-in .9s cubic-bezier(.2,1,.3,1); }
+.reveal .avatar { font-size: 3.6rem; }
+.reveal .die { width: 54px; height: 54px; right: -14px; bottom: 4px; }
+.reveal .pip { width: 8px; height: 8px; }
+@keyframes spin-in { from { transform: rotate(-120deg) scale(.6); } }
+.reveal h4 {
+  margin: 0;
+  font-size: clamp(2.2rem, 10vw, 3rem);
+  font-weight: 800; line-height: 1; letter-spacing: -0.04em;
+}
+.reveal .handle { font-size: .95rem; }
+.go-insta {
+  margin-top: 18px;
+  width: 100%;
+  display: inline-flex; justify-content: center; align-items: center; gap: 10px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  font: 800 1.15rem var(--display);
+  color: #fff; text-decoration: none;
+  background: linear-gradient(100deg, #fa7e1e, #d62976 45%, #962fbf 80%, #4f5bd5);
+  background-size: 180% 100%;
+  box-shadow: 0 10px 24px -8px rgba(214, 41, 118, .7);
+  animation: shine 2.4s ease-in-out infinite alternate;
+  transition: transform .15s ease;
+}
+.go-insta:hover { transform: translateY(-2px) scale(1.01); }
+.go-insta:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.go-insta svg { width: 22px; height: 22px; }
+@keyframes shine { to { background-position: 100% 0; } }
+.again {
+  margin-top: 4px;
+  padding: 12px 16px;
+  background: transparent; border: 0;
+  color: var(--muted);
+  font: 500 .95rem var(--display);
+  cursor: pointer;
+}
+.again:hover { color: var(--fg); }
+.again:focus-visible { outline: 2px solid var(--accent); border-radius: 10px; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal .ring, .go-insta { animation: none !important; }
+}
+
+.card.hit { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .ring, .avatar, .die { transition: none !important; transform: none !important; }
+  .cube { transition-duration: .01s !important; }
+  .rolling .hop, .rolling .shadow { animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<main>
+  <header>
+    <h1>A Crew</h1>
+    <p>Toca no card e cai direto no insta.</p>
+    <button class="roll-btn" id="open-roll" type="button">
+      <span class="mini" aria-hidden="true"><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span></span>
+      Girar o dado
+    </button>
+  </header>
+
+  <section class="grid" id="cards"></section>
+
+  <footer>Fotos entram no lugar das iniciais quando forem adicionadas.</footer>
+</main>
+
+<dialog id="roll-dialog" aria-labelledby="roll-title">
+  <div class="modal-top">
+    <h3 id="roll-title">Quem o dado escolhe?</h3>
+    <button class="close" id="close-roll" type="button" aria-label="Fechar">×</button>
+  </div>
+  <div class="table" id="table" role="button" tabindex="0" aria-label="Girar o dado">
+    <div class="shadow"></div>
+    <div class="hop">
+      <div class="scene">
+        <div class="cube" id="cube"></div>
+      </div>
+    </div>
+  </div>
+  <div class="result" id="result" aria-live="polite">
+    <span class="label">Toque na mesa para jogar</span>
+  </div>
+  <div class="reveal" id="reveal" hidden></div>
+</dialog>
+
+<script>
+const pessoas = [
+  { nome: "Seibt",    insta: "seibt0_",          dado: 3 },
+  { nome: "Matheus",  insta: "matheus.mariussi", dado: 4 },
+  { nome: "Leonardo", insta: "trojan.yaml",      dado: 5 },
+  { nome: "Gabriel",  insta: "gabrielmariussi",  dado: 6 },
+];
+
+// posições acesas numa grade 3x3 (0 = canto superior esquerdo)
+const faces = {
+  1: [4], 2: [0, 8], 3: [0, 4, 8],
+  4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8],
+};
+const dado = n => `<div class="die" role="img" aria-label="Dado: ${n}">` +
+  Array.from({ length: 9 }, (_, i) => `<span class="pip${faces[n].includes(i) ? " on" : ""}"></span>`).join("") +
+  `</div>`;
+
+const grid = document.getElementById("cards");
+for (const p of pessoas) {
+  const a = document.createElement("a");
+  a.className = "card";
+  a.href = `https://www.instagram.com/${p.insta}/`;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.setAttribute("aria-label", `${p.nome}, dado ${p.dado}: Instagram @${p.insta}`);
+  a.innerHTML = `
+    <div class="photo">
+      <div class="ring"><div class="avatar" data-foto="fotos/${p.nome.toLowerCase()}.jpg">${p.nome[0]}</div></div>
+      ${dado(p.dado)}
+    </div>
+    <h2>${p.nome}</h2>
+    <span class="handle">@${p.insta}</span>
+    <span class="cta">Ver perfil →</span>`;
+  a.dataset.dado = p.dado;
+  grid.appendChild(a);
+}
+
+/* ---------- dado 3D ---------- */
+const cube = document.getElementById("cube");
+const parts = [1, 2, 3, 4, 5, 6].map(n =>
+  `<div class="face f${n}">` +
+  Array.from({ length: 9 }, (_, i) => `<i class="${faces[n].includes(i) ? "on" : ""}"></i>`).join("") +
+  `</div>`).join("");
+cube.innerHTML = `<div class="core c1"></div><div class="core c2"></div><div class="core c3"></div>` + parts;
+
+// rotação que traz cada face para frente
+const alvo = { 1: [0, 0], 6: [0, 180], 3: [0, -90], 4: [0, 90], 2: [-90, 0], 5: [90, 0] };
+let rx = 0, ry = 0, rolando = false;
+
+const dialog = document.getElementById("roll-dialog");
+const table = document.getElementById("table");
+const result = document.getElementById("result");
+
+function voltas(atual, destino, min) {
+  // próximo ângulo >= atual + min*360 que termina no destino
+  const base = atual + min * 360;
+  const resto = ((destino - base) % 360 + 360) % 360;
+  return base + resto;
+}
+
+function girar() {
+  if (rolando) return;
+  rolando = true;
+  document.querySelectorAll(".card.hit").forEach(c => c.classList.remove("hit"));
+  const n = 1 + Math.floor(Math.random() * 6);
+  const [tx, ty] = alvo[n];
+  rx = voltas(rx, tx, 2 + Math.floor(Math.random() * 2));
+  ry = voltas(ry, ty, 2 + Math.floor(Math.random() * 2));
+  result.innerHTML = `<span class="label">Rolando…</span>`;
+
+  table.classList.remove("rolling");
+  void table.offsetWidth; // reinicia a animação do pulo
+  table.classList.add("rolling");
+  cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+
+  const reduz = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(() => mostrar(n), reduz ? 50 : 1750);
+}
+
+function mostrar(n) {
+  rolando = false;
+  table.classList.remove("rolling");
+  const p = pessoas.find(x => x.dado === n);
+  if (p) {
+    result.innerHTML = `<div class="fade">
+      <span class="label">Caiu ${n}</span>
+      <p class="who">${p.nome}</p>
+      <a href="https://www.instagram.com/${p.insta}/" target="_blank" rel="noopener noreferrer">@${p.insta} →</a>
+    </div>`;
+    document.querySelector(`.card[data-dado="${n}"]`)?.classList.add("hit");
+    timerReveal = setTimeout(() => revelar(p), 650);
+  } else {
+    result.innerHTML = `<div class="fade">
+      <span class="label">Caiu ${n}</span>
+      <p class="who">Ninguém é o ${n}</p>
+      <span class="label">Toque na mesa para jogar de novo</span>
+    </div>`;
+  }
+}
+
+const reveal = document.getElementById("reveal");
+let timerReveal;
+const instaIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`;
+
+function revelar(p) {
+  reveal.innerHTML = `<div class="reveal-inner">
+    <span class="tag">O dado escolheu · ${p.dado}</span>
+    <div class="photo">
+      <div class="ring"><div class="avatar" data-foto="fotos/${p.nome.toLowerCase()}.jpg">${p.nome[0]}</div></div>
+      ${dado(p.dado)}
+    </div>
+    <h4>${p.nome}</h4>
+    <span class="handle">@${p.insta}</span>
+    <a class="go-insta" href="https://www.instagram.com/${p.insta}/" target="_blank" rel="noopener noreferrer">${instaIcon} Ir ao insta?</a>
+    <button class="again" id="again" type="button">Jogar de novo</button>
+  </div>`;
+  reveal.hidden = false;
+  reveal.querySelector(".go-insta").focus();
+  document.getElementById("again").addEventListener("click", () => {
+    reveal.hidden = true;
+    girar();
+  });
+}
+
+dialog.addEventListener("close", () => { clearTimeout(timerReveal); reveal.hidden = true; });
+
+document.getElementById("open-roll").addEventListener("click", () => {
+  reveal.hidden = true;
+  dialog.showModal();
+  setTimeout(girar, 250);
+});
+document.getElementById("close-roll").addEventListener("click", () => dialog.close());
+dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
+table.addEventListener("click", girar);
+table.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); girar(); }
+});
+</script>
+
+<script>
+// Troca a inicial pela foto quando fotos/<nome>.jpg existir
+function carregarFoto(av) {
+  if (av.dataset.loaded) return;
+  av.dataset.loaded = "1";
+  const img = new Image();
+  img.alt = "";
+  img.onload = () => { av.textContent = ""; av.appendChild(img); };
+  img.src = av.dataset.foto;
+}
+document.querySelectorAll(".avatar[data-foto]").forEach(carregarFoto);
+new MutationObserver(() => document.querySelectorAll(".avatar[data-foto]").forEach(carregarFoto))
+  .observe(document.body, { childList: true, subtree: true });
+</script>
+</body>
+</html>
