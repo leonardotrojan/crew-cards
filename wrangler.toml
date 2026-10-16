@@ -8,4 +8,4 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "crew-metricas"
-database_id = "COLE-AQUI-O-ID-DO-D1"
+database_id = "14a41d7d-156f-44c6-a755-d4a3c8c00301"
