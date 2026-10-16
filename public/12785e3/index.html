@@ -251,6 +251,46 @@ th, td { padding: 7px 8px; border-bottom: 1px solid var(--linha); }
   padding: 6px 4px; font-size: .9rem; color: var(--tinta-2);
 }
 .rodape form { margin: 0; }
+.rodape-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.fantasma.perigo { color: #ff8fb0; border-color: color-mix(in srgb, var(--critico) 55%, var(--base)); }
+.fantasma.perigo:hover { border-color: var(--critico); background: color-mix(in srgb, var(--critico) 12%, transparent); }
+.fantasma.perigo:active { background: color-mix(in srgb, var(--critico) 22%, transparent); }
+.fantasma.perigo:focus-visible { outline-color: var(--critico); }
+
+/* ---------- confirmar o zerar ---------- */
+.confirmar {
+  width: min(420px, calc(100vw - 32px)); padding: 0;
+  border: 1px solid color-mix(in srgb, var(--critico) 45%, var(--linha)); border-radius: 26px;
+  background: radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--critico) 16%, transparent), transparent 65%), var(--superficie);
+  color: var(--tinta); box-shadow: 0 30px 80px -20px rgba(0,0,0,.85);
+}
+.confirmar::backdrop { background: rgba(8, 4, 14, .72); backdrop-filter: blur(4px); }
+.confirmar[open] { animation: confirmar-in .22s cubic-bezier(.2, 1.2, .4, 1); }
+@keyframes confirmar-in { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+.confirmar form { display: grid; gap: 12px; padding: 24px 22px 20px; }
+.confirmar .tag { color: #ff8fb0; }
+.confirmar h2 { margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.confirmar p { margin: 0; color: var(--tinta-2); line-height: 1.45; }
+.confirmar .campo { margin-top: 6px; font-size: .9rem; color: var(--tinta-2); }
+.confirmar .campo strong { font-family: var(--mono); font-weight: 500; letter-spacing: .1em; color: var(--tinta); }
+.confirmar input {
+  width: 100%; padding: 12px 14px; border-radius: 14px;
+  font: 500 1.1rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--tinta);
+  background: var(--plano); border: 1px solid var(--base);
+}
+.confirmar input:focus-visible { outline: 2px solid var(--critico); outline-offset: 2px; border-color: transparent; }
+.confirmar-acoes { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.botao-perigo {
+  font: 800 .95rem var(--display); color: #fff;
+  padding: 9px 18px; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--critico); box-shadow: 0 3px 0 #7a1f1f;
+  transition: transform .12s ease, box-shadow .12s ease, opacity .15s ease;
+}
+.botao-perigo:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 0 #7a1f1f; }
+.botao-perigo:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #7a1f1f; }
+.botao-perigo:focus-visible { outline: 2px solid var(--tinta); outline-offset: 3px; }
+.botao-perigo:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .confirmar[open] { animation: none; } }
 .interruptor { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; }
 .interruptor input {
   appearance: none; flex: none; position: relative; width: 42px; height: 24px; margin: 0;
@@ -404,9 +444,28 @@ th, td { padding: 7px 8px; border-bottom: 1px solid var(--linha); }
       <input type="checkbox" id="nao-contar">
       Não contar este aparelho nas métricas
     </label>
-    <form method="post" action="/12785e3/sair"><button class="fantasma" type="submit">Sair</button></form>
+    <div class="rodape-acoes">
+      <button class="fantasma perigo" id="zerar" type="button" aria-haspopup="dialog">Zerar métricas</button>
+      <form method="post" action="/12785e3/sair"><button class="fantasma" type="submit">Sair</button></form>
+    </div>
   </footer>
 </main>
+
+<!-- zerar: só apaga depois de digitar ZERAR (e a API confere a palavra de novo) -->
+<dialog class="confirmar" id="zerar-dialogo" aria-labelledby="zerar-titulo" aria-describedby="zerar-texto">
+  <form id="zerar-form" novalidate>
+    <span class="tag">Sem volta pelo painel</span>
+    <h2 id="zerar-titulo">Zerar as métricas?</h2>
+    <p id="zerar-texto"></p>
+    <label class="campo" for="zerar-campo">Pra confirmar, digite <strong>ZERAR</strong></label>
+    <input id="zerar-campo" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done">
+    <p class="erro" id="zerar-erro" role="alert" hidden></p>
+    <div class="confirmar-acoes">
+      <button class="fantasma" id="zerar-cancelar" type="button">Cancelar</button>
+      <button class="botao-perigo" id="zerar-ok" type="submit" disabled>Apagar tudo</button>
+    </div>
+  </form>
+</dialog>
 <div class="dica" id="dica" role="tooltip" hidden></div>
 </body>
 </html>

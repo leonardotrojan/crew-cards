@@ -420,6 +420,80 @@ document.addEventListener("focusin", e => {
 document.addEventListener("focusout", () => { dica.hidden = true; });
 addEventListener("scroll", () => { dica.hidden = true; }, { passive: true });
 
+/* ---------- zerar ---------- */
+
+// Apaga todos os eventos no D1. Só libera o botão depois de digitar ZERAR; a API confere a palavra de novo.
+const API_ZERAR = "/12785e3/api/zerar";
+const PALAVRA = "ZERAR";
+const dialogoZerar = $("zerar-dialogo");
+const campoZerar = $("zerar-campo");
+const okZerar = $("zerar-ok");
+const erroZerar = $("zerar-erro");
+let zerando = false;
+
+const confirmado = () => campoZerar.value.trim().toUpperCase() === PALAVRA;
+const esperarAtualizacao = async () => { while (carregando) await new Promise(r => setTimeout(r, 100)); };
+
+function abrirZerar() {
+  $("zerar-texto").textContent = eventos.length
+    ? `Apaga os ${plural(eventos.length, "evento", "eventos")} registrados (visitas, perfis, Insta, giros e toques) pra todo mundo que usa o painel.`
+    : "Apaga todos os eventos registrados (visitas, perfis, Insta, giros e toques) pra todo mundo que usa o painel.";
+  campoZerar.value = "";
+  okZerar.disabled = true;
+  erroZerar.hidden = true;
+  dialogoZerar.showModal();
+  campoZerar.focus();
+}
+
+async function zerar() {
+  if (zerando || !confirmado()) return;
+  zerando = true;
+  okZerar.disabled = true;
+  okZerar.textContent = "Apagando…";
+  erroZerar.hidden = true;
+  try {
+    const resposta = await fetch(API_ZERAR, {
+      method: "POST", cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmar: PALAVRA }),
+    });
+    const dados = await resposta.json().catch(() => ({}));
+    if (resposta.status === 401) {
+      erroZerar.replaceChildren("Sessão expirada. ", el("a", { href: "/12785e3/" }, "Entrar de novo"));
+      erroZerar.hidden = false;
+      return;
+    }
+    if (!resposta.ok) {
+      erroZerar.textContent = dados.erro ?? "Não deu pra zerar agora; tente de novo.";
+      erroZerar.hidden = false;
+      return;
+    }
+
+    // recomeça do zero: o que entrar depois de apagar vem inteiro na próxima leitura
+    await esperarAtualizacao();
+    eventos = [];
+    cursor = 0;
+    dialogoZerar.close();
+    await atualizar();
+    $("atualizado").textContent = `Zerado: ${plural(dados.apagados ?? 0, "evento apagado", "eventos apagados")} às ${hora.format(new Date())}`;
+  } catch {
+    // sem resposta: o servidor pode ter apagado ou não
+    erroZerar.textContent = "Sem resposta do servidor. Atualize o painel pra conferir se zerou.";
+    erroZerar.hidden = false;
+  } finally {
+    zerando = false;
+    okZerar.textContent = "Apagar tudo";
+    okZerar.disabled = !confirmado();
+  }
+}
+
+$("zerar").addEventListener("click", abrirZerar);
+$("zerar-cancelar").addEventListener("click", () => dialogoZerar.close());
+campoZerar.addEventListener("input", () => { okZerar.disabled = zerando || !confirmado(); });
+$("zerar-form").addEventListener("submit", e => { e.preventDefault(); zerar(); });
+dialogoZerar.addEventListener("click", e => { if (e.target === dialogoZerar && !zerando) dialogoZerar.close(); });
+dialogoZerar.addEventListener("cancel", e => { if (zerando) e.preventDefault(); });
+
 /* ---------- início ---------- */
 
 // quem abre o painel é da crew: por padrão este aparelho sai da conta (pra não inflar o próprio ranking)

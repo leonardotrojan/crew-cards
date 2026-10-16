@@ -76,6 +76,24 @@ test("formulário postado de outro site é recusado", async () => {
   assert.equal(resposta.headers.get("Set-Cookie"), null);
 });
 
+test("zerar só passa com sessão e vindo do próprio painel", async () => {
+  const token = cookieDe(await pedir("/12785e3/entrar", formulario(SENHA)));
+  const zerar = cabecalhos => pedir("/12785e3/api/zerar", {
+    metodo: "POST", corpo: '{"confirmar":"ZERAR"}', cabecalhos: { "Content-Type": "application/json", ...cabecalhos },
+  });
+
+  const semSessao = await zerar({ "Sec-Fetch-Site": "same-origin" });
+  assert.equal(semSessao.status, 401);
+  assert.ok((await semSessao.json()).erro);
+
+  const deOutroSite = await zerar({ Cookie: `${COOKIE}=${token}`, "Sec-Fetch-Site": "cross-site" });
+  assert.equal(deOutroSite.status, 403);
+  assert.ok(!(await deOutroSite.text()).includes(SEGREDO));
+
+  const doPainel = await zerar({ Cookie: `${COOKIE}=${token}`, "Sec-Fetch-Site": "same-origin" });
+  assert.equal(doPainel.status, 200); // o middleware deixou seguir pra Function
+});
+
 test("login com corpo enorme é recusado sem ler tudo", async () => {
   const resposta = await pedir("/12785e3/entrar", { ...formulario("x".repeat(5000)) });
   assert.equal(resposta.status, 413);

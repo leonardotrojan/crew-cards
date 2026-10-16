@@ -123,8 +123,9 @@ Arrastar a pasta no painel do Cloudflare não serve mais: por ali ele não sobe 
 
 ### Antes da festa
 
-Apague os dados de teste com `npm run zerar` (apaga todos os eventos) e recarregue o painel que
-estiver aberto. Se apagar sem querer, o D1 volta no tempo (até 7 dias):
+Apague os dados de teste pelo botão **Zerar métricas** no rodapé do painel (pede pra digitar
+`ZERAR`; a API `functions/12785e3/api/zerar.js` confere a palavra de novo) ou com `npm run zerar`, e
+recarregue os outros painéis que estiverem abertos. Se apagar sem querer, o D1 volta no tempo (até 7 dias):
 `npx wrangler d1 time-travel restore crew-metricas --timestamp=<data ou unix>`.
 
 Tudo cabe no plano grátis (100 mil requisições de Functions por dia).

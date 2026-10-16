@@ -46,8 +46,9 @@ const irPara = (local, cookie) =>
   comSeguranca(new Response(null, { status: 303, headers: { Location: local, "Set-Cookie": cookie } }));
 const esperar = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// navegadores mandam Sec-Fetch-Site: formulário postado por outro site (CSRF) não passa
+// navegadores mandam Sec-Fetch-Site: formulário ou POST da API (zerar) vindo de outro site (CSRF) não passa
 const mesmaOrigem = request => (request.headers.get("Sec-Fetch-Site") ?? "same-origin") === "same-origin";
+const SO_LEITURA = ["GET", "HEAD"];
 
 async function entrar(request, senha, local) {
   const corpo = await lerCorpo(request, MAX_FORMULARIO);
@@ -70,7 +71,7 @@ export async function onRequest({ request, env, next }) {
   const local = url.protocol === "http:"; // depois do redirecionamento acima, http só sobra no npm run dev
 
   const formulario = request.method === "POST" && [`${BASE}/entrar`, `${BASE}/sair`].includes(url.pathname);
-  if (formulario && !mesmaOrigem(request)) return texto("Formulário de outro site.", 403);
+  if (!SO_LEITURA.includes(request.method) && !mesmaOrigem(request)) return texto("Pedido de outro site.", 403);
   if (formulario && url.pathname === `${BASE}/entrar`) return entrar(request, senha, local);
   if (formulario) return irPara(`${BASE}/`, cookieSaida({ local }));
 
