@@ -32,6 +32,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<!-- métricas da festa (ver README): sem esse arquivo o site funciona igual -->
+<script src="metricas.js" defer></script>
 <style>
 body { margin: 0; }
 img { max-width: 100%; }
@@ -658,6 +660,9 @@ const pessoas = [
   { nome: "Gabriel",  insta: "gabrielmariussi",  dado: 6 },
 ];
 
+// métricas da festa (metricas.js): sem o arquivo, ou com o aparelho fora da conta, não faz nada
+const medir = (tipo, dados) => window.metricas?.registrar(tipo, dados);
+
 // posições acesas numa grade 3x3 (0 = canto superior esquerdo)
 const faces = {
   1: [4], 2: [0, 8], 3: [0, 4, 8],
@@ -679,6 +684,7 @@ const decoCard = assombrado ? teia + ["g1", "g2", "g3"].map(g => `<span class="g
 
 const grid = document.getElementById("cards");
 for (const p of pessoas) {
+  const slug = p.nome.toLowerCase();
   const a = document.createElement("a");
   a.className = "card";
   a.href = `https://www.instagram.com/${p.insta}/`;
@@ -688,7 +694,10 @@ for (const p of pessoas) {
   a.setAttribute("aria-haspopup", "dialog");
   // clique normal abre o perfil; cmd/ctrl/shift-clique continua indo direto pro insta
   a.addEventListener("click", e => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      medir("insta", { pessoa: slug, origem: "direto" });
+      return;
+    }
     e.preventDefault();
     abrirPerfil(p);
   });
@@ -701,6 +710,7 @@ for (const p of pessoas) {
     <span class="handle">@${p.insta}</span>
     <span class="cta">Ver perfil →</span>`;
   a.dataset.dado = p.dado;
+  a.dataset.pessoa = slug;
   grid.appendChild(a);
 }
 
@@ -797,11 +807,16 @@ function voltas(atual, destino, min) {
   return base + resto;
 }
 
-function girar() {
-  if (rolando) return;
+// origem: botao (o "Girar o dado" do topo), mesa (tocou na mesa) ou denovo (botão dentro do perfil)
+function girar(origem = "mesa") {
+  if (rolando) {
+    if (origem === "mesa") medir("impaciente"); // tocou na mesa com o dado ainda rolando
+    return;
+  }
   rolando = true;
   document.querySelectorAll(".card.hit").forEach(c => c.classList.remove("hit"));
   const n = 1 + Math.floor(Math.random() * 6);
+  medir("giro", { face: n, origem, pessoa: pessoas.find(x => x.dado === n)?.nome.toLowerCase() });
   const [tx, ty] = alvo[n];
   rx = voltas(rx, tx, 3 + Math.floor(Math.random() * 2));
   ry = voltas(ry, ty, 3 + Math.floor(Math.random() * 2));
@@ -864,11 +879,15 @@ function revelar(p, sorteado = true) {
   </div>`;
   reveal.hidden = false;
   dialog.setAttribute("aria-labelledby", "perfil-nome");
-  reveal.querySelector(".go-insta").focus();
+  const origem = sorteado ? "dado" : "card";
+  medir("perfil", { pessoa: slug, origem });
+  const insta = reveal.querySelector(".go-insta");
+  insta.addEventListener("click", () => medir("insta", { pessoa: slug, origem }));
+  insta.focus();
   document.getElementById("again").addEventListener("click", () => {
     reveal.hidden = true;
     dialog.setAttribute("aria-labelledby", "roll-title");
-    girar();
+    girar("denovo");
   });
 }
 
@@ -888,13 +907,13 @@ dialog.addEventListener("close", () => {
 document.getElementById("open-roll").addEventListener("click", () => {
   reveal.hidden = true;
   dialog.showModal();
-  setTimeout(girar, 250);
+  setTimeout(() => girar("botao"), 250);
 });
 document.getElementById("close-roll").addEventListener("click", () => dialog.close());
 dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
-table.addEventListener("click", girar);
+table.addEventListener("click", () => girar("mesa"));
 table.addEventListener("keydown", e => {
-  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); girar(); }
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); girar("mesa"); }
 });
 
 /* ---------- Halloween: morcegos e olhos que seguem o ponteiro ---------- */

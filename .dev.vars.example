@@ -1,0 +1,3 @@
+# Copie para .dev.vars (fica fora do git e do deploy): senha do painel no `npm run dev`.
+# Em produção a senha é um secret do Cloudflare: npx wrangler pages secret put PAINEL_SENHA
+PAINEL_SENHA=troque-esta-senha

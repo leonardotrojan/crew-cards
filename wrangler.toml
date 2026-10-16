@@ -1,0 +1,11 @@
+# Cloudflare Pages (projeto fantasia-dado): o site estático fica em public/ e as Pages Functions
+# (métricas e painel) em functions/. Deploy: npx wrangler pages deploy
+name = "fantasia-dado"
+pages_build_output_dir = "./public"
+compatibility_date = "2026-10-01"
+
+# Banco das métricas. Criar uma vez: npx wrangler d1 create crew-metricas (e colar o id aqui)
+[[d1_databases]]
+binding = "DB"
+database_name = "crew-metricas"
+database_id = "COLE-AQUI-O-ID-DO-D1"

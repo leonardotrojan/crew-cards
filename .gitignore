@@ -1,0 +1,5 @@
+# wrangler (cache, D1 local do `npm run dev`) e a senha local do painel
+.wrangler/
+.dev.vars
+node_modules/
+.DS_Store

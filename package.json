@@ -1,0 +1,11 @@
+{
+  "name": "crew-cards",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx wrangler pages dev",
+    "deploy": "npx wrangler pages deploy",
+    "test": "node --test --experimental-test-coverage --test-coverage-exclude=test/**",
+    "zerar": "npx wrangler d1 execute crew-metricas --remote --command \"DELETE FROM eventos\""
+  }
+}

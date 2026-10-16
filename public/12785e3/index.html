@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0d0716">
+<title>Painel da festa</title>
+<!-- Só abre com sessão: functions/12785e3/_middleware.js. Os números vêm de functions/12785e3/api/eventos.js. -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  /* tema Halloween do site (public/index.html) */
+  --plano: #0d0716;
+  --superficie: #17102a;
+  --superficie-2: #1f1638;
+  --linha: #2d2047;
+  --base: #4a3a6b;
+  --tinta: #f6ecd9;
+  --tinta-2: #d6cbe8;
+  --apagado: #a999c4;
+  --acento: #ff7a1a;
+  /* cor dos dados: abóbora validada (skill dataviz: faixa de luminância, croma, daltonismo, contraste) contra --superficie */
+  --serie: #e8650f;
+  /* status do veredito do dado: sempre junto de ícone + texto */
+  --bom: #0ca30c;
+  --alerta: #fab219;
+  --critico: #d03b3b;
+  --ring: conic-gradient(from 210deg, #ff7a1a, #ff3d8b, #9b4dff, #8cff5a, #ff7a1a);
+  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --mono: "DM Mono", ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  padding: 40px 16px 56px;
+  background:
+    radial-gradient(55% 30% at 85% 0%, rgba(255,122,26,.14), transparent 70%),
+    radial-gradient(50% 40% at 0% 100%, rgba(140,255,90,.06), transparent 70%),
+    linear-gradient(180deg, #1c1033 0%, #130b24 40%, var(--plano) 100%) fixed;
+  color: var(--tinta);
+  font-family: var(--display);
+}
+main { max-width: 980px; margin: 0 auto; display: grid; gap: 18px; }
+/* atualização demorada: segura o desenho anterior meio apagado (sem esqueleto, sem pulo) */
+main { transition: opacity .2s ease; }
+body.atualizando main { opacity: .7; transition-delay: .3s; }
+
+.rotulo, .tag, dt, .pos, summary, th {
+  font-family: var(--mono); font-weight: 400; text-transform: uppercase; letter-spacing: .1em;
+}
+
+/* ---------- topo ---------- */
+.topo { display: grid; gap: 10px; margin-bottom: 6px; }
+.tag { font-size: .75rem; letter-spacing: .14em; color: var(--acento); }
+h1 { margin: 0; max-width: 14ch; font-size: clamp(2.1rem, 7vw, 3.6rem); font-weight: 800; line-height: .95; letter-spacing: -0.04em; }
+.status { margin: 4px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-family: var(--mono); font-size: .8rem; color: var(--apagado); }
+.erro { color: #ff8fb0; }
+.erro a { color: var(--tinta); text-underline-offset: 3px; }
+.fantasma {
+  font: 500 .85rem var(--display); color: var(--tinta);
+  padding: 7px 14px; border-radius: 999px;
+  background: transparent; border: 1px solid var(--base); cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.fantasma:hover { border-color: var(--acento); background: rgba(255,122,26,.08); }
+.fantasma:active { background: rgba(255,122,26,.16); }
+.fantasma:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+/* ---------- números do topo ---------- */
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.kpi {
+  display: grid; gap: 6px; align-content: start;
+  padding: 16px; background: var(--superficie);
+  border: 1px solid var(--linha); border-radius: 20px;
+}
+.rotulo { font-size: .68rem; color: var(--apagado); }
+.kpi strong { font-size: clamp(1.7rem, 6vw, 2.3rem); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.kpi.heroi {
+  grid-column: 1 / -1; padding: 22px 22px 20px; border-radius: 26px;
+  background: radial-gradient(90% 130% at 100% 0%, rgba(255,122,26,.2), transparent 60%), var(--superficie);
+}
+.kpi.heroi strong { font-size: clamp(3.4rem, 16vw, 5.6rem); letter-spacing: -0.05em; }
+.nota { font-size: .92rem; color: var(--tinta-2); }
+@media (min-width: 760px) {
+  .kpis { grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr)); }
+  .kpi.heroi { grid-column: auto; }
+}
+
+/* ---------- blocos ---------- */
+.bloco {
+  display: grid; gap: 18px; align-content: start;
+  padding: 22px 18px; background: var(--superficie);
+  border: 1px solid var(--linha); border-radius: 26px;
+}
+@media (min-width: 760px) { .bloco { padding: 26px 26px 24px; } }
+.bloco h2 { margin: 0; font-size: 1.55rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.sub { margin: 6px 0 0; color: var(--apagado); font-size: .92rem; }
+.vazio { margin: 0; color: var(--apagado); font-size: .92rem; }
+
+/* ---------- ranking ---------- */
+.ranking { list-style: none; margin: 0; padding: 0; }
+.linha {
+  display: grid; grid-template-columns: 14px 48px minmax(0, 1fr) auto;
+  grid-template-areas: "pos foto nome valor" "pos foto trilho trilho" "pos foto meta meta";
+  align-items: center; column-gap: 12px; row-gap: 7px;
+  padding: 14px 0; border-top: 1px solid var(--linha);
+}
+.linha:first-child { border-top: 0; padding-top: 4px; }
+.pos { grid-area: pos; font-size: .8rem; color: var(--apagado); }
+.anel { grid-area: foto; position: relative; width: 48px; height: 48px; padding: 3px; border-radius: 50%; background: var(--ring); }
+.linha.primeiro .anel { box-shadow: 0 0 26px -4px rgba(255,122,26,.75); }
+.avatar {
+  width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden;
+  border-radius: 50%; border: 3px solid var(--superficie); background: var(--plano);
+  font-size: 1.2rem; font-weight: 800;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.mini-dado {
+  width: 22px; height: 22px; padding: 3px;
+  display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); place-items: center;
+  background: var(--tinta); border: 1.5px solid #1a0f26; border-radius: 6px;
+}
+.anel .mini-dado { position: absolute; right: -6px; bottom: -3px; transform: rotate(-10deg); }
+.mini-dado i { width: 3.5px; height: 3.5px; border-radius: 50%; }
+.mini-dado i.on { background: #1a0f26; }
+.nome { grid-area: nome; min-width: 0; font-size: 1.12rem; font-weight: 800; letter-spacing: -0.01em; }
+/* barra: fina, ponta arredondada, base reta presa na linha de base */
+.trilho { grid-area: trilho; display: block; height: 8px; border-left: 1px solid var(--base); outline: none; border-radius: 0 4px 4px 0; }
+.trilho span { display: block; height: 100%; background: var(--serie); border-radius: 0 4px 4px 0; transition: width .4s ease; }
+.trilho:hover span, .trilho:focus-visible span { filter: brightness(1.25); }
+.trilho:focus-visible { box-shadow: 0 0 0 2px var(--superficie), 0 0 0 4px var(--acento); }
+.meta { grid-area: meta; display: grid; gap: 2px; font-size: .82rem; line-height: 1.3; color: var(--apagado); }
+.junto { white-space: nowrap; }
+.valor { grid-area: valor; display: flex; align-items: baseline; gap: 6px; }
+.valor strong { font-size: 1.7rem; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.valor span { font-family: var(--mono); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; color: var(--apagado); }
+
+/* ---------- dado ---------- */
+.veredito { display: grid; gap: 10px; }
+.selo {
+  justify-self: start; display: inline-flex; align-items: center; gap: 10px;
+  padding: 8px 16px 8px 12px; border-radius: 999px;
+  background: var(--superficie-2); border: 1px solid var(--linha);
+  font-size: 1.05rem; font-weight: 800;
+}
+.selo::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--cor-status, var(--apagado)); }
+.selo[data-status="honesto"] { --cor-status: var(--bom); }
+.selo[data-status="suspeito"] { --cor-status: var(--alerta); }
+.selo[data-status="viciado"] { --cor-status: var(--critico); }
+.explica { margin: 0; max-width: 56ch; font-size: .92rem; line-height: 1.45; color: var(--tinta-2); }
+/* barras deitadas: o nome de cada face cabe inteiro, valor na ponta, linha do esperado em pé por cima */
+.grafico-dado { --col: 112px; --vao: 10px; --sobra: 40px; position: relative; display: grid; }
+.barra-dado {
+  display: grid; grid-template-columns: var(--col) minmax(0, 1fr); column-gap: var(--vao); align-items: center;
+  outline: none; border-radius: 8px;
+}
+.barra-dado:focus-visible { box-shadow: 0 0 0 2px var(--acento); }
+.quem-face { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: .92rem; color: var(--tinta-2); white-space: nowrap; }
+.trilha-dado { display: flex; align-items: center; gap: 6px; height: 34px; border-left: 1px solid var(--base); }
+.trilha-dado .barra { flex: none; height: 14px; background: var(--serie); border-radius: 0 4px 4px 0; transition: width .4s ease; }
+.barra-dado:hover .barra, .barra-dado:focus-visible .barra { filter: brightness(1.25); }
+.valor-dado { position: relative; z-index: 2; padding: 0 3px; font-size: .9rem; font-weight: 800; background: var(--superficie); border-radius: 4px; }
+.esperado { position: absolute; top: 0; bottom: 0; z-index: 1; border-left: 1px solid rgba(246,236,217,.6); pointer-events: none; }
+.legenda-dado { display: flex; align-items: center; gap: 8px; margin: 0; font-size: .85rem; color: var(--tinta-2); }
+.legenda-dado .chave { width: 0; height: 14px; border-left: 1px solid rgba(246,236,217,.75); }
+.recordes { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 0; }
+.recordes > div { padding: 14px 16px; background: var(--superficie-2); border-radius: 18px; }
+dt { font-size: .66rem; color: var(--apagado); }
+dd { margin: 6px 0 0; font-size: 1.7rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+dd small { display: block; margin-top: 6px; font-size: .8rem; font-weight: 500; line-height: 1.3; letter-spacing: 0; color: var(--tinta-2); }
+dd.texto { font-size: 1rem; line-height: 1.35; letter-spacing: 0; }
+
+details summary { cursor: pointer; font-size: .72rem; color: var(--apagado); }
+details summary:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; border-radius: 4px; }
+table { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+th { font-size: .66rem; color: var(--apagado); text-align: left; }
+th, td { padding: 7px 8px; border-bottom: 1px solid var(--linha); }
+.num { text-align: right; }
+
+/* ---------- mapa de calor ---------- */
+.cabeca-calor { display: grid; gap: 14px; }
+.controles { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg { display: inline-flex; min-inline-size: 0; margin: 0; padding: 3px; border-radius: 999px; background: var(--plano); border: 1px solid var(--linha); }
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.seg button {
+  padding: 8px 14px; border: 0; border-radius: 999px; cursor: pointer;
+  font: 500 .88rem var(--display); color: var(--tinta-2); background: transparent;
+}
+.seg button:hover { color: var(--tinta); background: rgba(246,236,217,.06); }
+.seg button[aria-pressed="true"] { color: #1a0f26; background: var(--tinta); font-weight: 800; }
+.seg button:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.calor { display: grid; gap: 18px; }
+@media (min-width: 860px) { .calor { grid-template-columns: minmax(0, 1fr) 270px; align-items: start; } }
+.palco {
+  position: relative; width: 100%; max-width: 390px; margin: 0 auto; overflow: hidden;
+  background: var(--plano); border: 1px solid var(--linha); border-radius: 18px;
+}
+.palco.largo { max-width: none; }
+.escala { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+/* a prévia é só fundo: apagada e sem toque, pro calor aparecer por cima */
+.escala iframe { display: block; border: 0; pointer-events: none; filter: saturate(.35) brightness(.55); }
+.escala canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+.palco-cartao { display: grid; gap: 10px; align-content: start; margin: 0; }
+.palco-cartao:not(.ativo) { display: none; } /* tela estreita: só a escolhida nas abas */
+.palco-cartao figcaption { display: flex; justify-content: center; align-items: baseline; gap: 8px; font-size: .92rem; color: var(--tinta); }
+.conta-palco { font-family: var(--mono); font-size: .74rem; color: var(--apagado); }
+.calor-info, .calor-resumo { display: grid; gap: 14px; align-content: start; }
+.calor-info .numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.calor-info .numeros > div { display: grid; gap: 6px; padding: 14px 16px; background: var(--superficie-2); border-radius: 18px; }
+.calor-info .numeros strong { font-size: 1.7rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+.faixa { height: 10px; border-radius: 999px; border: 1px solid var(--linha); }
+.pontas { display: flex; justify-content: space-between; margin-top: 6px; font-family: var(--mono); font-size: .68rem; color: var(--apagado); }
+.enfeites { margin: 0; font-size: .92rem; color: var(--tinta-2); }
+
+/* ---------- telas maiores: grade de 12 colunas. Ranking e dado lado a lado a partir de 900px;
+   a partir de 1100px, título ao lado dos números e as três telas do calor juntas ---------- */
+@media (min-width: 900px) {
+  main { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  main > * { grid-column: 1 / -1; }
+  .bloco-ranking, .bloco-dado { grid-column: span 6; }
+}
+@media (min-width: 1100px) {
+  main { max-width: 1400px; }
+  .topo { grid-column: span 5; align-self: end; margin-bottom: 0; }
+  .kpis { grid-column: span 7; }
+
+  .so-estreito { display: none; }
+  .palco-cartao:not(.ativo) { display: grid; }
+  .calor {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas: "pagina mesa perfil" "pagina info info";
+    align-items: start;
+  }
+  .calor.computador { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "pagina pagina" "mesa perfil" "info info"; }
+  .calor.computador [data-palco="pagina"] .palco { max-width: 960px; }
+  [data-palco="pagina"] { grid-area: pagina; }
+  [data-palco="mesa"] { grid-area: mesa; }
+  [data-palco="perfil"] { grid-area: perfil; }
+  .calor-info { grid-area: info; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); column-gap: 26px; }
+}
+
+/* ---------- rodapé ---------- */
+.rodape {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 20px;
+  padding: 6px 4px; font-size: .9rem; color: var(--tinta-2);
+}
+.rodape form { margin: 0; }
+.interruptor { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; }
+.interruptor input {
+  appearance: none; flex: none; position: relative; width: 42px; height: 24px; margin: 0;
+  border-radius: 999px; background: var(--linha); cursor: pointer; transition: background .2s ease;
+}
+.interruptor input::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--tinta); transition: transform .2s ease;
+}
+.interruptor input:checked { background: var(--acento); }
+.interruptor input:checked::after { transform: translateX(18px); }
+.interruptor input:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
+
+/* ---------- dica (tooltip) ---------- */
+.dica {
+  position: fixed; z-index: 10; max-width: 250px; pointer-events: none;
+  padding: 9px 12px; border-radius: 12px;
+  background: #0b0614; border: 1px solid var(--linha); box-shadow: 0 14px 30px -12px rgba(0,0,0,.9);
+  font-size: .8rem; line-height: 1.35; color: var(--tinta-2);
+}
+.dica strong { display: block; margin-bottom: 2px; font-size: 1rem; color: var(--tinta); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+<script type="module" src="painel.js"></script>
+</head>
+<body>
+<main>
+  <header class="topo">
+    <span class="tag">Painel da festa 🎃</span>
+    <h1>Qual seu número da sorte?</h1>
+    <p class="status">
+      <span id="atualizado">Carregando…</span>
+      <span class="erro" id="erro" role="alert" hidden></span>
+      <button class="fantasma" id="atualizar" type="button">Atualizar</button>
+    </p>
+  </header>
+
+  <section class="kpis" aria-label="Resumo">
+    <div class="kpi heroi">
+      <span class="rotulo">Pessoas no site</span>
+      <strong id="k-visitantes">–</strong>
+      <span class="nota" id="k-visitas">–</span>
+    </div>
+    <div class="kpi"><span class="rotulo">Perfis abertos</span><strong id="k-perfis">–</strong></div>
+    <div class="kpi"><span class="rotulo">Instas abertos</span><strong id="k-instas">–</strong></div>
+    <div class="kpi"><span class="rotulo">Giros do dado</span><strong id="k-giros">–</strong></div>
+  </section>
+
+  <section class="bloco bloco-ranking" aria-labelledby="t-ranking">
+    <div>
+      <h2 id="t-ranking">Mais stalkeado</h2>
+      <p class="sub">Pessoas diferentes que abriram o Insta de cada um</p>
+    </div>
+    <ol class="ranking" id="ranking"></ol>
+  </section>
+
+  <section class="bloco bloco-dado" aria-labelledby="t-dado">
+    <div class="veredito">
+      <h2 id="t-dado">O dado é honesto?</h2>
+      <span class="selo" id="selo">–</span>
+      <p class="explica" id="explica"></p>
+    </div>
+    <div class="veredito">
+      <p class="legenda-dado" id="legenda-dado" hidden><span class="chave"></span><span id="esperado-rotulo"></span></p>
+      <div class="grafico-dado" id="grafico-dado">
+        <div class="esperado" id="esperado" hidden></div>
+        <div id="barras-dado"></div>
+      </div>
+    </div>
+    <dl class="recordes">
+      <div><dt>Recorde de giros</dt><dd><span id="r-giros">–</span><small>de uma pessoa só</small></dd></div>
+      <div><dt>Impaciência</dt><dd><span id="r-impacientes">–</span><small id="r-impacientes-nota">toques na mesa com o dado ainda rolando</small></dd></div>
+      <div><dt>De onde vêm os giros</dt><dd class="texto" id="r-origens">–</dd></div>
+    </dl>
+    <details>
+      <summary>Ver em tabela</summary>
+      <table>
+        <thead><tr><th>Face</th><th>Quem</th><th class="num">Giros</th><th class="num">%</th></tr></thead>
+        <tbody id="tabela-dado"></tbody>
+      </table>
+    </details>
+  </section>
+
+  <section class="bloco bloco-calor" aria-labelledby="t-calor">
+    <div class="cabeca-calor">
+      <div>
+        <h2 id="t-calor">Mapa de calor</h2>
+        <p class="sub">Onde as pessoas tocaram, por cima do próprio site</p>
+      </div>
+      <div class="controles">
+        <fieldset class="seg so-estreito">
+          <legend class="so-leitor">Tela</legend>
+          <button type="button" data-sup="pagina">Página</button>
+          <button type="button" data-sup="mesa">Mesa do dado</button>
+          <button type="button" data-sup="perfil">Perfil</button>
+        </fieldset>
+        <fieldset class="seg">
+          <legend class="so-leitor">Aparelho</legend>
+          <button type="button" data-layout="2col">Celular</button>
+          <button type="button" data-layout="3col">Computador</button>
+        </fieldset>
+      </div>
+    </div>
+    <!-- celular: uma tela por vez (abas); tela larga: as três lado a lado -->
+    <div class="calor" id="calor">
+      <figure class="palco-cartao" data-palco="pagina">
+        <div class="palco"><div class="escala">
+          <iframe title="Prévia da página, só para o mapa de calor" tabindex="-1"></iframe><canvas></canvas>
+        </div></div>
+        <figcaption><strong>Página</strong> <span class="conta-palco"></span></figcaption>
+      </figure>
+      <figure class="palco-cartao" data-palco="mesa">
+        <div class="palco"><div class="escala">
+          <iframe title="Prévia da mesa do dado, só para o mapa de calor" tabindex="-1"></iframe><canvas></canvas>
+        </div></div>
+        <figcaption><strong>Mesa do dado</strong> <span class="conta-palco"></span></figcaption>
+      </figure>
+      <figure class="palco-cartao" data-palco="perfil">
+        <div class="palco"><div class="escala">
+          <iframe title="Prévia do perfil, só para o mapa de calor" tabindex="-1"></iframe><canvas></canvas>
+        </div></div>
+        <figcaption><strong>Perfil</strong> <span class="conta-palco"></span></figcaption>
+      </figure>
+      <div class="calor-info">
+        <div class="calor-resumo">
+          <p class="erro" id="calor-erro" hidden></p>
+          <span class="rotulo" id="calor-escopo">Todos os toques</span>
+          <div class="numeros">
+            <div><span class="rotulo">Toques</span><strong id="calor-total">–</strong></div>
+            <div><span class="rotulo">No nada</span><strong id="calor-nada">–</strong></div>
+          </div>
+          <p class="enfeites" id="calor-enfeites"></p>
+          <div>
+            <div class="faixa" id="escala-faixa"></div>
+            <div class="pontas"><span>menos toques</span><span>mais toques</span></div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Onde</th><th class="num">Toques</th><th class="num">%</th></tr></thead>
+          <tbody id="tabela-alvos"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer class="rodape">
+    <label class="interruptor">
+      <input type="checkbox" id="nao-contar">
+      Não contar este aparelho nas métricas
+    </label>
+    <form method="post" action="/12785e3/sair"><button class="fantasma" type="submit">Sair</button></form>
+  </footer>
+</main>
+<div class="dica" id="dica" role="tooltip" hidden></div>
+</body>
+</html>
