@@ -24,12 +24,12 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- fotos dos cards: baixam já (antes do JS), e o Cloudflare manda como Early Hints.
      Mesmo caminho e mesmo ?v= que o script monta, senão baixa duas vezes. -->
-<link rel="preload" as="image" href="fotos/ian.jpg?v=2">
-<link rel="preload" as="image" href="fotos/igor.jpg?v=2">
-<link rel="preload" as="image" href="fotos/seibt.jpg?v=2">
-<link rel="preload" as="image" href="fotos/matheus.jpg?v=2">
-<link rel="preload" as="image" href="fotos/leonardo.jpg?v=2">
-<link rel="preload" as="image" href="fotos/gabriel.jpg?v=2">
+<link rel="preload" as="image" href="fotos/ian.jpg?v=3">
+<link rel="preload" as="image" href="fotos/igor.jpg?v=3">
+<link rel="preload" as="image" href="fotos/seibt.jpg?v=3">
+<link rel="preload" as="image" href="fotos/matheus.jpg?v=3">
+<link rel="preload" as="image" href="fotos/leonardo.jpg?v=3">
+<link rel="preload" as="image" href="fotos/gabriel.jpg?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
@@ -894,7 +894,7 @@ const faces = {
 };
 // Versão das fotos: aumente quando trocar alguma, pra ninguém ficar com a antiga no cache
 // (e lembre do <link rel="preload"> no <head>, que usa o mesmo número)
-const FOTOS_V = 2;
+const FOTOS_V = 3;
 const foto = caminho => `${caminho}?v=${FOTOS_V}`;
 
 const dado = n => `<div class="die" role="img" aria-label="Dado: ${n}">` +
