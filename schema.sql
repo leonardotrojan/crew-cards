@@ -4,13 +4,13 @@ CREATE TABLE IF NOT EXISTS eventos (
   id        INTEGER PRIMARY KEY AUTOINCREMENT, -- nunca reaproveita id: o painel lê "depois do id X"
   ts        INTEGER NOT NULL, -- epoch ms, relógio do servidor
   visitante TEXT    NOT NULL, -- id aleatório guardado no localStorage do convidado
-  tipo      TEXT    NOT NULL, -- visita | perfil | insta | giro | impaciente | toque
+  tipo      TEXT    NOT NULL, -- visita | perfil | insta | beijo | mata | giro | impaciente | toque
   pessoa    TEXT,             -- slug da crew (ian, igor, seibt...)
-  origem    TEXT,             -- perfil: card|dado · insta: card|dado|direto · giro: botao|mesa|denovo
+  origem    TEXT,             -- perfil, beijo, mata: card|dado · insta: card|dado|direto · giro: botao|mesa|denovo
   face      INTEGER,          -- giro: face que o dado tirou
   sup       TEXT,             -- toque: pagina | mesa | perfil
   layout    TEXT,             -- 2col (celular) | 3col
   x         REAL,             -- toque: posição em fração da superfície (0..1, fora disso = fora dela)
   y         REAL,
-  alvo      TEXT              -- toque: card, girar, mesa, insta, denovo, fechar, fundo, lua, morcego, olhos, nada
+  alvo      TEXT              -- toque: card, girar, dado, mesa, beijo, mata, foto, insta, denovo, fechar, fundo, lua, morcego, olhos, nada
 );

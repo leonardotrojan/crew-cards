@@ -27,7 +27,7 @@ const capitalizar = s => s[0].toUpperCase() + s.slice(1);
 
 /**
  * @param {Evento[]} eventos
- * @returns {{ visitantes: number, visitas: number, perfis: number, instas: number, giros: number }}
+ * @returns {{ visitantes: number, visitas: number, perfis: number, instas: number, giros: number, beijos: number, tiros: number }}
  */
 export function resumo(eventos) {
   return {
@@ -36,12 +36,17 @@ export function resumo(eventos) {
     perfis: doTipo(eventos, "perfil").length,
     instas: doTipo(eventos, "insta").length,
     giros: doTipo(eventos, "giro").length,
+    beijos: doTipo(eventos, "beijo").length,
+    tiros: doTipo(eventos, "mata").length,
   };
 }
 
+// o que conta como dar atenção pra quem o dado tirou: escolher beijo ou mata, ou abrir o Insta
+const RESPOSTAS = new Set(["beijo", "mata", "insta"]);
+
 /**
  * Rejeição: o dado tirou a pessoa (perfil com origem "dado") e o convidado apertou "Jogar de novo"
- * sem abrir o Insta dela. Fechar a mesa e girar pelo botão de fora não conta.
+ * sem escolher beijo ou mata nem abrir o Insta dela. Fechar a mesa e girar pelo botão de fora não conta.
  * @param {Evento[]} eventos
  * @returns {Map<string, number>} pessoa → rejeições
  */
@@ -50,7 +55,7 @@ export function rejeicoes(eventos) {
   const contagem = new Map();
   for (const e of [...eventos].sort((a, b) => a.id - b.id)) {
     if (e.tipo === "perfil") tirada.set(e.visitante, e.origem === "dado" ? e.pessoa : null);
-    else if (e.tipo === "insta" && tirada.get(e.visitante) === e.pessoa) tirada.set(e.visitante, null);
+    else if (RESPOSTAS.has(e.tipo) && tirada.get(e.visitante) === e.pessoa) tirada.set(e.visitante, null);
     else if (e.tipo === "giro") {
       const rejeitada = tirada.get(e.visitante);
       if (rejeitada && e.origem === "denovo") contagem.set(rejeitada, (contagem.get(rejeitada) ?? 0) + 1);
@@ -63,6 +68,7 @@ export function rejeicoes(eventos) {
 /**
  * Ranking "mais stalkeado": visitantes únicos que abriram o Insta de cada um.
  * Conversão = dos que viram o perfil, quantos abriram o Insta (null se ninguém viu).
+ * Beijos e tiros (arma de bebida) contam cada escolha, não visitantes: o celular passa de mão em mão.
  * @param {Evento[]} eventos
  * @param {Membro[]} crew
  */
@@ -87,6 +93,8 @@ export function ranking(eventos, crew) {
       instas: instas.length,
       conversao: viram.size ? [...viram].filter(v => abriram.has(v)).length / viram.size : null,
       rejeicoes: rejeitados.get(slug) ?? 0,
+      beijos: eventos.filter(e => e.tipo === "beijo" && e.pessoa === slug).length,
+      tiros: eventos.filter(e => e.tipo === "mata" && e.pessoa === slug).length,
     };
   }).sort((a, b) => b.abriram - a.abriram || b.instas - a.instas || b.viram - a.viram || (a.dado ?? 99) - (b.dado ?? 99));
 }

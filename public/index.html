@@ -53,6 +53,10 @@ img { max-width: 100%; }
   --felt: #17603f;
   --felt-hi: #2a8a5d;
   --felt-lo: #0c3a25;
+  /* beijo ou mato: batom e a bebida da arma (botões, carimbo e efeitos na foto) */
+  --beijo: #c8102e;
+  --bebida: #b45309; /* âmbar de destilado */
+  --sobre-bebida: #fff; /* texto em cima da cor da bebida */
   --ring: conic-gradient(from 210deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75);
   --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --mono: "DM Mono", ui-monospace, Menlo, monospace;
@@ -60,11 +64,13 @@ img { max-width: 100%; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #141016; --card: #1e1922; --line: #302838; --fg: #f3eef5; --muted: #a99fb0; --accent: #f0569a; --die: #f3eef5;
+    --beijo: #ff3b5c; --bebida: #f5a524; --sobre-bebida: #1a0f26;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #141016; --card: #1e1922; --line: #302838; --fg: #f3eef5; --muted: #a99fb0; --accent: #f0569a; --die: #f3eef5;
+  --beijo: #ff3b5c; --bebida: #f5a524; --sobre-bebida: #1a0f26;
   color-scheme: dark;
 }
 
@@ -78,7 +84,8 @@ body {
 }
 main { max-width: 920px; margin: 0 auto; display: grid; gap: 36px; }
 
-header { display: grid; gap: 20px; }
+/* capa: no celular uma coluna (título, dado grande, regra, botão); a partir de 681px o dado vai pra direita */
+header { display: grid; gap: 18px; }
 h1 {
   margin: 0;
   max-width: 13ch;
@@ -87,6 +94,84 @@ h1 {
   line-height: .95;
   letter-spacing: -0.04em;
   text-wrap: balance;
+}
+
+/* dado da capa: grande e flutuando; tocar nele faz o mesmo que "Girar o dado" */
+.palco-dado {
+  --dado: 128px; /* lado do cubo: o JS monta chanfros e cantos pra esse tamanho */
+  --chanfro: 10px;
+  position: relative;
+  height: clamp(200px, 30svh, 250px);
+  display: grid; place-items: center;
+  perspective: 1000px;
+  overflow-x: clip; /* a aura pulsando passa da coluna estreita (681-830px) e faria a página rolar de lado */
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.palco-dado::before { /* aura atrás do dado */
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: calc(var(--dado) * 2); aspect-ratio: 1; translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 30%, transparent), transparent);
+  animation: aura 3.2s ease-in-out infinite;
+}
+.palco-dado .scene { --s: var(--dado); --b: var(--chanfro); animation: balanca 6.4s ease-in-out infinite; }
+.palco-dado .hop { animation: flutua 3.2s ease-in-out infinite; transition: scale .2s ease; }
+.palco-dado:hover .hop { scale: 1.05; }
+.palco-dado:active .hop { scale: .95; }
+.palco-dado .shadow {
+  width: calc(var(--dado) * 1.15); height: calc(var(--dado) * .3);
+  margin-left: calc(var(--dado) * -.575); margin-top: calc(var(--dado) * .62);
+  animation: sombra-flutua 3.2s ease-in-out infinite;
+}
+/* com o pop-up aberto o dado da capa fica atrás do desfoque: para de animar */
+body:has(dialog[open]) .palco-dado *, body:has(dialog[open]) .palco-dado::before { animation-play-state: paused; }
+@keyframes flutua { 50% { transform: translate3d(0, -14px, 0); } }
+@keyframes sombra-flutua { 50% { transform: scale(.8); opacity: .55; } }
+@keyframes balanca {
+  0%, 100% { transform: rotateX(-16deg) rotateY(-20deg); }
+  30% { transform: rotateX(-21deg) rotateY(-31deg) rotateZ(-3deg); }
+  70% { transform: rotateX(-11deg) rotateY(-9deg) rotateZ(3deg); }
+}
+@keyframes aura { 50% { transform: scale(1.1); opacity: .7; } }
+
+/* regra do jogo */
+.regra { display: grid; gap: 8px; }
+.regra h2 { margin: 0; font-size: clamp(2rem, 7.4vw, 2.7rem); font-weight: 800; line-height: 1; letter-spacing: -0.035em; }
+.regra .ou {
+  margin-inline: .15em; vertical-align: .45em;
+  font: 400 .42em var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+}
+.cor-beijo { color: var(--beijo); }
+.cor-mata { color: var(--bebida); }
+.regra p {
+  margin: 0; max-width: 34ch;
+  font-size: 1.05rem; line-height: 1.4; text-wrap: pretty;
+  color: color-mix(in srgb, var(--fg) 80%, var(--bg));
+}
+.regra .obs { max-width: none; font: 400 .8rem/1.5 var(--mono); letter-spacing: .02em; color: var(--muted); }
+.regra .obs strong { font-weight: 400; color: var(--bebida); }
+
+@media (min-width: 681px) {
+  header {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, .8fr);
+    grid-template-areas: "season dado" "title dado" "regra dado" "botao dado";
+    column-gap: 32px; row-gap: 20px;
+  }
+  .season { grid-area: season; }
+  .title { grid-area: title; }
+  .regra { grid-area: regra; }
+  .roll-btn { grid-area: botao; }
+  .palco-dado { grid-area: dado; align-self: center; height: 340px; --dado: 168px; --chanfro: 13px; }
+}
+
+/* lista da crew: um pouco abaixo da capa, com título pequeno */
+.crew { display: grid; gap: 14px; margin-top: 24px; }
+.secao {
+  margin: 0;
+  font-family: var(--mono); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted);
 }
 
 .grid {
@@ -196,6 +281,9 @@ h1 {
 }
 .roll-btn .mini span { width: 4px; height: 4px; border-radius: 50%; }
 .roll-btn .mini span.on { background: var(--pip); }
+@media (max-width: 680px) { /* no celular o botão ocupa a largura toda, logo embaixo do dado */
+  .roll-btn { justify-self: stretch; justify-content: center; padding-block: 15px; font-size: 1.1rem; }
+}
 
 /* ---------- pop-up ---------- */
 dialog {
@@ -375,18 +463,23 @@ dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 au
   font-family: var(--mono); font-size: .75rem; text-transform: uppercase;
   letter-spacing: .14em; color: var(--muted);
 }
-/* foto em pé (3:4) com o cenário, levemente torta como foto impressa */
+/* foto em pé (3:4) com o cenário, levemente torta como foto impressa. Tocar nela abre o Insta */
 .reveal .photo { margin-block: 14px 16px; }
 .reveal .ring {
-  --h: clamp(180px, 100dvh - 380px, 300px);
+  --h: clamp(180px, 100dvh - 410px, 300px);
   /* largura explícita: com width:auto a foto (540px) esticava o .photo e o dado ia parar longe */
+  display: block;
   width: calc(var(--h) * 3 / 4); height: var(--h);
   margin-bottom: 0;
   border-radius: 26px;
+  color: inherit; text-decoration: none;
   transform: rotate(-2deg);
   animation: deal-in .7s cubic-bezier(.2,1.1,.3,1);
+  transition: transform .4s ease, scale .2s ease, box-shadow .3s ease;
 }
-.reveal .avatar { border-radius: 22px; font-size: 4.6rem; }
+.reveal .ring:hover { scale: 1.02; }
+.reveal .ring:focus-visible { outline: 3px solid var(--fg); outline-offset: 4px; }
+.reveal .avatar { position: relative; border-radius: 22px; font-size: 4.6rem; }
 .reveal .die { width: 54px; height: 54px; right: -14px; bottom: -14px; }
 .reveal .pip { width: 8px; height: 8px; }
 @keyframes deal-in { from { transform: rotate(-16deg) translateY(30px) scale(.7); opacity: 0; } }
@@ -395,27 +488,34 @@ dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 au
   font-size: clamp(2.2rem, 10vw, 3rem);
   font-weight: 800; line-height: 1; letter-spacing: -0.04em;
 }
-.reveal .handle { font-size: .95rem; }
-.go-insta {
-  margin-top: 18px;
-  width: 100%;
-  display: inline-flex; justify-content: center; align-items: center; gap: 10px;
-  padding: 16px 20px;
-  border-radius: 18px;
-  font: 800 1.15rem var(--display);
-  color: #fff; text-decoration: none;
-  background: linear-gradient(100deg, #fa7e1e, #d62976 45%, #962fbf 80%, #4f5bd5);
-  background-size: 180% 100%;
-  box-shadow: 0 10px 24px -8px rgba(214, 41, 118, .7);
-  animation: shine 2.4s ease-in-out infinite alternate;
-  transition: transform .15s ease;
+.reveal h4:focus { outline: none; } /* recebe o foco quando o perfil abre, só pra leitor de tela e teclado */
+
+/* beijo ou mato: botões de fliperama. Escolheu, tá escolhido: a escolhida fica afundada, a outra apaga */
+.escolha { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 18px; }
+.opcao {
+  --funda: color-mix(in srgb, var(--cor) 45%, #000);
+  display: inline-flex; justify-content: center; align-items: center; gap: 8px;
+  padding: 15px 10px;
+  border: 0; border-radius: 12px;
+  font: 800 1.15rem var(--display); text-transform: uppercase; letter-spacing: .04em;
+  color: var(--sobre); background: var(--cor);
+  box-shadow: 0 5px 0 var(--funda);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, box-shadow .12s ease, opacity .25s ease, filter .25s ease;
 }
-.go-insta:hover { transform: translateY(-2px) scale(1.01); }
-.go-insta:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
-.go-insta svg { width: 22px; height: 22px; }
-@keyframes shine { to { background-position: 100% 0; } }
+.opcao[data-escolha="beijo"] { --cor: var(--beijo); --sobre: #fff; }
+.opcao[data-escolha="mata"] { --cor: var(--bebida); --sobre: var(--sobre-bebida); }
+.opcao .emoji { font-size: 1.35em; line-height: 1; }
+.opcao:hover { transform: translateY(-2px); }
+.opcao:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--funda); }
+.opcao:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.escolha.feita .opcao { cursor: default; }
+.escolha.feita .opcao[aria-pressed="true"] { transform: translateY(5px); box-shadow: 0 0 0 var(--funda); }
+.escolha.feita .opcao[aria-pressed="false"] { transform: none; opacity: .3; filter: grayscale(.8); box-shadow: none; }
+
 .again {
-  margin-top: 4px;
+  margin-top: 10px;
   padding: 12px 16px;
   background: transparent; border: 0;
   color: var(--muted);
@@ -424,8 +524,112 @@ dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 au
 }
 .again:hover { color: var(--fg); }
 .again:focus-visible { outline: 2px solid var(--accent); border-radius: 10px; }
+/* o Insta fica discreto: o @ pequeno no pé do pop-up (além da própria foto) */
+.arroba {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 999px;
+  font: 400 .8rem var(--mono); color: var(--muted); text-decoration: none;
+}
+.arroba svg { width: 14px; height: 14px; flex: none; }
+.arroba:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+.arroba:focus-visible { outline: 2px solid var(--accent); }
+
+/* o que a escolha faz na foto: quadrinho e mira, nada de coraçãozinho. --alvo-x/y: onde costuma estar o rosto */
+.efeito { --alvo-x: 50%; --alvo-y: 34%; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.efeito > * { position: absolute; }
+/* beijo: balão de quadrinho "SMACK!" estourando no rosto, e a foto leva um tranco */
+.efeito .smack {
+  left: 54%; top: 32%; width: 78%; aspect-ratio: 1.25;
+  translate: -50% -50%;
+  display: grid; place-items: center;
+  container-type: inline-size;
+  animation: estoura .35s cubic-bezier(.2,1.6,.4,1) both;
+}
+.efeito .smack svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.efeito .smack polygon { fill: #ffd23f; stroke: #0b0614; stroke-width: 2.5px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.efeito .smack b {
+  position: relative; rotate: -8deg;
+  font: 800 1.6rem var(--display); font-size: 17cqw; letter-spacing: -0.02em; line-height: 1;
+  color: var(--beijo); -webkit-text-stroke: 1.5px #0b0614; paint-order: stroke fill;
+  text-shadow: 3px 3px 0 #0b0614;
+}
+@keyframes estoura { from { transform: scale(.2) rotate(-25deg); opacity: 0; } }
+.photo.beijou .ring { animation: tranco .3s ease .08s; }
+@keyframes tranco { 40% { transform: rotate(-2deg) scale(.95); } }
+/* mato: a mira trava no rosto, disparo (clarão e tranco), respingo da bebida e gotas escorrendo */
+.efeito .mira {
+  left: var(--alvo-x); top: var(--alvo-y); width: 60%; aspect-ratio: 1;
+  translate: -50% -50%;
+  fill: none; stroke: var(--bebida); stroke-width: 2.5;
+  filter: drop-shadow(0 0 1.5px #0b0614) drop-shadow(0 0 1.5px #0b0614);
+  animation: mira .7s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes mira {
+  0% { transform: scale(1.9) rotate(-60deg); opacity: 0; }
+  45% { transform: scale(1) rotate(0deg); opacity: 1; }
+  55% { transform: scale(.85); opacity: 1; }
+  100% { transform: scale(.85); opacity: 0; }
+}
+.efeito .clarao {
+  inset: 0; border-radius: 26px;
+  background: radial-gradient(circle at var(--alvo-x) var(--alvo-y), #fff, transparent 60%);
+  animation: clarao .35s ease-out .32s both;
+}
+@keyframes clarao { 0%, 100% { opacity: 0; } 15% { opacity: .9; } }
+.efeito .respingo {
+  left: var(--alvo-x); top: var(--alvo-y); width: 64%; aspect-ratio: 1;
+  translate: -50% -50%;
+  fill: color-mix(in srgb, var(--bebida) 72%, transparent); stroke: #0b0614; stroke-width: 1.2;
+  filter: drop-shadow(0 3px 3px rgba(0,0,0,.4));
+  animation: respinga .35s cubic-bezier(.2,1.6,.4,1) .34s both;
+}
+.efeito .respingo .brilho { fill: rgba(255,255,255,.45); stroke: none; }
+@keyframes respinga { from { transform: scale(.1) rotate(-30deg); opacity: 0; } }
+.efeito .gota {
+  left: var(--alvo-x); top: var(--alvo-y); width: var(--t); aspect-ratio: 1; border-radius: 50%;
+  translate: -50% -50%;
+  background: var(--bebida); box-shadow: 0 0 0 1px #0b0614;
+  animation: gota .5s cubic-bezier(.1,.7,.3,1) .34s both;
+}
+@keyframes gota {
+  from { transform: translate(0, 0) scale(.5); opacity: 1; }
+  to { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+.efeito .escorre {
+  left: calc(var(--alvo-x) + var(--x)); top: calc(var(--alvo-y) + 9%); width: var(--t); height: var(--h);
+  border-radius: 0 0 999px 999px; transform-origin: top;
+  background: color-mix(in srgb, var(--bebida) 72%, transparent);
+  animation: escorre 1.1s cubic-bezier(.3,.6,.4,1) var(--d) both;
+}
+@keyframes escorre { from { transform: scaleY(0); } }
+.photo.atirou .ring { animation: tremor .4s ease .32s; }
+@keyframes tremor {
+  0%, 100% { transform: rotate(-2deg); }
+  20% { transform: translateX(-7px) rotate(-5deg); }
+  45% { transform: translateX(6px) rotate(1deg); }
+  70% { transform: translateX(-3px) rotate(-3deg); }
+}
+/* adesivo com o recado (é ele que o leitor de tela anuncia): quadrado, sombra dura, no canto da foto */
+.carimbo { position: absolute; left: -12px; bottom: 24px; z-index: 4; margin: 0; pointer-events: none; }
+.carimbo span {
+  display: block; padding: 6px 12px 7px;
+  font: 800 1.05rem var(--display); text-transform: uppercase; letter-spacing: .04em; line-height: 1.1; white-space: nowrap;
+  color: var(--sobre); background: var(--cor);
+  border: 2px solid #0b0614; border-radius: 4px;
+  box-shadow: 4px 4px 0 #0b0614;
+  transform: rotate(-6deg);
+  animation: carimbo-in .3s cubic-bezier(.2,1.5,.4,1) .25s both;
+}
+.carimbo small { display: block; margin-top: 3px; font: 400 .68rem var(--mono); letter-spacing: .08em; }
+.photo.beijou .carimbo { --cor: var(--beijo); --sobre: #fff; }
+.photo.atirou .carimbo { --cor: var(--bebida); --sobre: var(--sobre-bebida); }
+.photo.atirou .carimbo span { animation-delay: .5s; }
+@keyframes carimbo-in { from { transform: rotate(-16deg) scale(.4); opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .reveal .ring, .go-insta, .avatar img { animation: none !important; }
+  .reveal, .reveal .ring, .avatar img { animation: none !important; }
+  .efeito .mira, .efeito .clarao, .efeito .gota { display: none; }
+  .efeito > *, .carimbo span { animation: none !important; }
 }
 
 .card.hit { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
@@ -434,6 +638,7 @@ dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 au
   .card, .ring, .avatar, .die { transition: none !important; transform: none !important; }
   .cube, .scene, .bevel, .corner { transition-duration: .01s !important; }
   .rolling .hop, .rolling .shadow { animation: none !important; }
+  .palco-dado *, .palco-dado::before { animation: none !important; }
 }
 
 /* ---------- Halloween (ligado por data-theme="halloween" no <html>; tira o atributo e o site volta ao normal) ----------
@@ -444,6 +649,7 @@ dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 au
   --accent: #ff7a1a; --glow: #8cff5a;
   --die: #f6ecd9; --pip: #1a0f26;
   --felt: #2a1442; --felt-hi: #4a2470; --felt-lo: #130820;
+  --beijo: #e5173f; --bebida: #8cff5a; --sobre-bebida: #1a0f26; /* batom cor de sangue e poção de bruxa */
   --ring: conic-gradient(from 210deg, #ff7a1a, #ff3d8b, #9b4dff, #8cff5a, #ff7a1a);
   color-scheme: dark;
 }
@@ -594,9 +800,9 @@ dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 au
   opacity: 0; transition: opacity .7s ease;
 }
 [data-theme="halloween"] .table.frente::before { opacity: 1; }
-[data-theme="halloween"] .go-insta {
-  background-image: linear-gradient(100deg, #ff7a1a, #ff3d8b 40%, #9b4dff 75%, #8cff5a);
-  box-shadow: 0 10px 24px -8px rgba(255,122,26,.7);
+/* dado da capa com o mesmo brilho de bruxa */
+[data-theme="halloween"] .palco-dado::before {
+  background: radial-gradient(closest-side, rgba(140,255,90,.26), rgba(255,122,26,.12) 55%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -623,13 +829,30 @@ dialog:has(.reveal:not([hidden])) .modal-top { position: absolute; inset: 0 0 au
       <h1>Qual seu número da sorte?</h1>
       <i class="spark" aria-hidden="true">✦</i><i class="spark" aria-hidden="true">✦</i><i class="spark" aria-hidden="true">✦</i><i class="spark" aria-hidden="true">✦</i>
     </div>
+    <!-- só pro dedo: quem usa teclado ou leitor de tela tem o botão "Girar o dado" logo abaixo, que faz o mesmo -->
+    <div class="palco-dado" id="palco-dado" aria-hidden="true">
+      <div class="shadow"></div>
+      <div class="hop">
+        <div class="scene">
+          <div class="cube" id="cubo-capa"></div>
+        </div>
+      </div>
+    </div>
+    <div class="regra">
+      <h2><span class="cor-beijo">Beijo</span> <span class="ou">ou</span> <span class="cor-mata">Mata</span></h2>
+      <p>Quem cair no dado, você escolhe: beija ou atira com a arma de bebida.</p>
+      <p class="obs">🥃 Obs.: se atirar, <strong>os dois bebem</strong>: quem caiu no dado e quem girou.</p>
+    </div>
     <button class="roll-btn" id="open-roll" type="button">
       <span class="mini" aria-hidden="true"><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span><span></span><span class="on"></span></span>
       Girar o dado
     </button>
   </header>
 
-  <section class="grid" id="cards"></section>
+  <section class="crew" aria-labelledby="crew-titulo">
+    <p class="secao" id="crew-titulo">Quem pode cair no dado</p>
+    <div class="grid" id="cards"></div>
+  </section>
 </main>
 
 <dialog id="roll-dialog" aria-labelledby="roll-title">
@@ -715,18 +938,12 @@ for (const p of pessoas) {
   grid.appendChild(a);
 }
 
-/* ---------- dado 3D ---------- */
-const cube = document.getElementById("cube");
+/* ---------- dado 3D (o da mesa, que gira, e o grande da capa) ---------- */
 const parts = [1, 2, 3, 4, 5, 6].map(n =>
   `<div class="face f${n}">` +
   Array.from({ length: 9 }, (_, i) => `<i class="${faces[n].includes(i) ? "on" : ""}"></i>`).join("") +
   `</div>`).join("");
 
-// chanfros e cantos: fecham o cubo como um sólido (as faces sozinhas deixavam frestas nos vértices)
-const scene = document.querySelector(".scene");
-const S = parseFloat(getComputedStyle(scene).getPropertyValue("--s")) || 112;
-const B = parseFloat(getComputedStyle(scene).getPropertyValue("--b")) || 9;
-const H = S / 2, F = S - 2 * B;
 const add = (a, b) => a.map((c, i) => c + b[i]);
 const sub = (a, b) => a.map((c, i) => c - b[i]);
 const mul = (a, k) => a.map(c => c * k);
@@ -738,33 +955,41 @@ const px = n => +n.toFixed(3);
 const matrix3d = (u, v, n, c) => `matrix3d(${[...u, 0, ...v, 0, ...n, 0, ...c, 1].map(px).join(",")})`;
 const eixos = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 
-let pecas = "";
-for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) {
-  const n1 = eixos[i], n2 = eixos[j];
-  if (dot(n1, n2) !== 0) continue; // faces opostas não têm aresta em comum
-  const u = cross(n1, n2), v = unit(sub(n1, n2)), n = unit(add(n1, n2));
-  const c = mul(add(n1, n2), H - B / 2);
-  pecas += `<div class="bevel" data-n="${n.join(" ")}" style="width:${px(F + 1)}px;height:${px(B * Math.SQRT2 + .8)}px;transform:${matrix3d(u, v, n, c)}"></div>`;
+// chanfros e cantos: fecham o cubo como um sólido (as faces sozinhas deixavam frestas nos vértices).
+// As medidas vêm do --s/--b da cena de cada dado.
+function montarDado(cubo) {
+  const cena = getComputedStyle(cubo.closest(".scene"));
+  const S = parseFloat(cena.getPropertyValue("--s")) || 112;
+  const B = parseFloat(cena.getPropertyValue("--b")) || 9;
+  const H = S / 2, F = S - 2 * B;
+  let pecas = "";
+  for (let i = 0; i < 6; i++) for (let j = i + 1; j < 6; j++) {
+    const n1 = eixos[i], n2 = eixos[j];
+    if (dot(n1, n2) !== 0) continue; // faces opostas não têm aresta em comum
+    const u = cross(n1, n2), v = unit(sub(n1, n2)), n = unit(add(n1, n2));
+    const c = mul(add(n1, n2), H - B / 2);
+    pecas += `<div class="bevel" data-n="${n.join(" ")}" style="width:${px(F + 1)}px;height:${px(B * Math.SQRT2 + .8)}px;transform:${matrix3d(u, v, n, c)}"></div>`;
+  }
+  for (const sx of [1, -1]) for (const sy of [1, -1]) for (const sz of [1, -1]) {
+    const Pz = [sx * (H - B), sy * (H - B), sz * H];
+    const Px = [sx * H, sy * (H - B), sz * (H - B)];
+    const Py = [sx * (H - B), sy * H, sz * (H - B)];
+    const G = mul(add(add(Px, Py), Pz), 1 / 3);
+    const n = unit([sx, sy, sz]), u = unit(sub(Px, Py)), v = cross(n, u);
+    const D = Math.ceil(B * Math.SQRT2) + 2;
+    const pts = [Pz, Px, Py].map(P => {
+      const d = mul(sub(P, G), 1.1); // leve sobra pra esconder a emenda
+      return `${px(D / 2 + dot(d, u))},${px(D / 2 + dot(d, v))}`;
+    });
+    // triângulo em SVG (e não clip-path): se comporta igual em todo browser dentro do preserve-3d
+    pecas += `<svg class="corner" data-n="${n.join(" ")}" viewBox="0 0 ${D} ${D}" style="width:${D}px;height:${D}px;transform:${matrix3d(u, v, n, G)}" aria-hidden="true"><polygon points="${pts.join(" ")}"/></svg>`;
+  }
+  for (const n of eixos) { // núcleo
+    const u = Math.abs(n[1]) === 1 ? [1, 0, 0] : unit(cross([0, 1, 0], n));
+    pecas += `<div class="core" style="transform:${matrix3d(u, cross(n, u), n, mul(n, H - 7))}"></div>`;
+  }
+  cubo.innerHTML = parts + pecas;
 }
-for (const sx of [1, -1]) for (const sy of [1, -1]) for (const sz of [1, -1]) {
-  const Pz = [sx * (H - B), sy * (H - B), sz * H];
-  const Px = [sx * H, sy * (H - B), sz * (H - B)];
-  const Py = [sx * (H - B), sy * H, sz * (H - B)];
-  const G = mul(add(add(Px, Py), Pz), 1 / 3);
-  const n = unit([sx, sy, sz]), u = unit(sub(Px, Py)), v = cross(n, u);
-  const D = Math.ceil(B * Math.SQRT2) + 2;
-  const pts = [Pz, Px, Py].map(P => {
-    const d = mul(sub(P, G), 1.1); // leve sobra pra esconder a emenda
-    return `${px(D / 2 + dot(d, u))},${px(D / 2 + dot(d, v))}`;
-  });
-  // triângulo em SVG (e não clip-path): se comporta igual em todo browser dentro do preserve-3d
-  pecas += `<svg class="corner" data-n="${n.join(" ")}" viewBox="0 0 ${D} ${D}" style="width:${D}px;height:${D}px;transform:${matrix3d(u, v, n, G)}" aria-hidden="true"><polygon points="${pts.join(" ")}"/></svg>`;
-}
-for (const n of eixos) { // núcleo
-  const u = Math.abs(n[1]) === 1 ? [1, 0, 0] : unit(cross([0, 1, 0], n));
-  pecas += `<div class="core" style="transform:${matrix3d(u, cross(n, u), n, mul(n, H - 7))}"></div>`;
-}
-cube.innerHTML = parts + pecas;
 
 // luz fixa na tela (de cima, da esquerda, da frente): o tom de cada chanfro segue a orientação final do dado
 const luz = unit([-0.35, -0.75, 0.55]);
@@ -775,8 +1000,8 @@ function girarVetor([x, y, z], ax, ay) { // mesma ordem do CSS: rotateX(ax) rota
   const cx = Math.cos(ax), sx = Math.sin(ax);
   return [x1, y * cx - z1 * sx, y * sx + z1 * cx];
 }
-function sombrear(ax, ay, tx = -16, ty = -20) { // tx/ty: inclinação da cena (0 quando está de frente)
-  cube.querySelectorAll("[data-n]").forEach(el => {
+function sombrear(cubo, ax, ay, tx = -16, ty = -20) { // tx/ty: inclinação da cena (0 quando está de frente)
+  cubo.querySelectorAll("[data-n]").forEach(el => {
     const n = el.dataset.n.split(" ").map(Number);
     const nw = girarVetor(girarVetor(n, rad(ax), rad(ay)), rad(tx), rad(ty)); // cubo, depois a inclinação da cena
     const t = Math.min(1, Math.max(0, 0.5 + 0.5 * dot(nw, luz)));
@@ -784,7 +1009,16 @@ function sombrear(ax, ay, tx = -16, ty = -20) { // tx/ty: inclinação da cena (
     el.style.color = `rgb(${mix(199, 255)}, ${mix(188, 255)}, ${mix(170, 253)})`;
   });
 }
-sombrear(0, 0);
+
+const cube = document.getElementById("cube");
+montarDado(cube);
+sombrear(cube, 0, 0);
+
+// o da capa muda de tamanho no corte do layout (CSS): remonta quando a tela cruza o corte
+const cuboCapa = document.getElementById("cubo-capa");
+const montarCapa = () => { montarDado(cuboCapa); sombrear(cuboCapa, 0, 0); };
+montarCapa();
+matchMedia("(min-width: 681px)").addEventListener("change", montarCapa);
 
 // rotação que traz cada face para frente
 const alvo = { 1: [0, 0], 6: [0, 180], 3: [0, -90], 4: [0, 90], 2: [-90, 0], 5: [90, 0] };
@@ -827,7 +1061,7 @@ function girar(origem = "mesa") {
   void table.offsetWidth; // reinicia a animação do pulo
   table.classList.add("rolling");
   cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
-  sombrear(rx, ry);
+  sombrear(cube, rx, ry);
 
   clearTimeout(timer);
   timer = setTimeout(() => pousar(n), reduzido() ? 50 : T_GIRO);
@@ -836,7 +1070,7 @@ function girar(origem = "mesa") {
 function pousar(n) { // o dado parou: vira de frente, mostra o número por um tempo e só então chama a pessoa
   table.classList.remove("rolling");
   table.classList.add("frente");
-  sombrear(rx, ry, 0, 0);
+  sombrear(cube, rx, ry, 0, 0);
   result.innerHTML = `<div class="fade"><span class="label">Caiu ${n}</span></div>`;
   timer = setTimeout(() => mostrar(n), reduzido() ? T_MOSTRA : T_FRENTE + T_MOSTRA);
 }
@@ -864,27 +1098,99 @@ function mostrar(n) {
 const reveal = document.getElementById("reveal");
 const instaIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`;
 
-// sorteado = veio do dado; senão foi aberto tocando no card
+// o que cada escolha faz na foto: o recado do adesivo (que o leitor de tela anuncia) e o efeito, sorteado a cada vez
+const entre = (min, max) => (min + Math.random() * (max - min)).toFixed(2);
+const polar = (r, a) => [50 + r * Math.cos(a), 50 + r * Math.sin(a)]; // num viewBox 0-100
+const ponto = ([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+// contorno de estrela: n pontas alternando um raio de fora e um de dentro
+const pontas = (n, fora, dentro) => Array.from({ length: n * 2 }, (_, i) =>
+  polar(Number(i % 2 ? entre(...dentro) : entre(...fora)), (i / (n * 2)) * 2 * Math.PI));
+
+const balaoSmack = () => `<span class="smack"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
+  `<polygon points="${pontas(12, [44, 50], [31, 37]).map(ponto).join(" ")}"/></svg><b>SMACK!</b></span>`;
+
+const MIRA = `<svg class="mira" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="30"/><circle cx="50" cy="50" r="2"/>` +
+  `<path d="M50 6v26M50 68v26M6 50h26M68 50h26"/></svg>`;
+
+function respingo() { // estrela de pontas redondas: de cada ponta, uma curva até o meio da seguinte
+  const p = pontas(9, [34, 46], [20, 27]);
+  const meio = (a, b) => ponto([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
+  const contorno = p.map((q, i) => `Q${ponto(q)} ${meio(q, p[(i + 1) % p.length])}`).join(" ");
+  const gotas = Array.from({ length: 5 }, () => {
+    const [x, y] = polar(Number(entre(44, 49)), Math.random() * 2 * Math.PI);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${entre(1.5, 3.5)}"/>`;
+  }).join("");
+  return `<svg class="respingo" viewBox="0 0 100 100" aria-hidden="true"><path d="M${meio(p.at(-1), p[0])} ${contorno}Z"/>${gotas}` +
+    `<ellipse class="brilho" cx="40" cy="38" rx="9" ry="4.5" transform="rotate(-30 40 38)"/></svg>`;
+}
+
+const estilhacos = () => Array.from({ length: 8 }, (_, i) => {
+  const a = (i / 8) * 2 * Math.PI + Math.random() * .4, d = Number(entre(45, 80));
+  return `<span class="gota" style="--dx:${(Math.cos(a) * d).toFixed(0)}px;--dy:${(Math.sin(a) * d).toFixed(0)}px;--t:${entre(5, 10)}px"></span>`;
+}).join("");
+
+// x (% a partir do centro do tiro), comprimento (px), largura (px), atraso (s)
+const ESCORRIDAS = [[-17, 34, 7, .55], [-3, 58, 9, .62], [13, 26, 6, .7]]
+  .map(([x, h, t, d]) => `<span class="escorre" style="--x:${x}%;--h:${h}px;--t:${t}px;--d:${d}s"></span>`).join("");
+
+const ESCOLHAS = {
+  beijo: { classe: "beijou", recado: "Beija!", efeito: balaoSmack },
+  mata: {
+    classe: "atirou",
+    recado: "Manda bala!<small>Os dois bebem 🥃</small>",
+    efeito: () => MIRA + `<span class="clarao"></span>` + respingo() + estilhacos() + ESCORRIDAS,
+  },
+};
+
+// escolheu, tá escolhido: uma escolha por perfil aberto (pra trocar, só jogando de novo)
+function escolher(grupo, escolha, dados) {
+  if (grupo.classList.contains("feita")) return;
+  grupo.classList.add("feita");
+  for (const b of grupo.querySelectorAll(".opcao")) {
+    b.setAttribute("aria-pressed", String(b.dataset.escolha === escolha));
+    b.setAttribute("aria-disabled", "true");
+  }
+  const { classe, recado, efeito } = ESCOLHAS[escolha];
+  const retrato = reveal.querySelector(".photo");
+  retrato.classList.add(classe);
+  retrato.querySelector(".efeito").innerHTML = efeito();
+  retrato.querySelector(".carimbo").innerHTML = `<span>${recado}</span>`;
+  medir(escolha, dados);
+}
+
+// sorteado = veio do dado; senão foi aberto tocando no card. O Insta fica na foto e no @ pequeno do pé.
 function revelar(p, sorteado = true) {
   const slug = p.nome.toLowerCase();
+  const perfil = `https://www.instagram.com/${p.insta}/`;
   reveal.innerHTML = `<div class="reveal-inner">
     <span class="tag">${assombrado ? "🎃 " : ""}${sorteado ? `O dado escolheu · ${p.dado}` : `Face ${p.dado} do dado`}</span>
     <div class="photo">
-      <div class="ring"><div class="avatar" data-foto="${foto(`fotos/cena/${slug}.jpg`)}" data-reserva="${foto(`fotos/${slug}.jpg`)}">${p.nome[0]}</div></div>
+      <a class="ring" href="${perfil}" target="_blank" rel="noopener noreferrer" aria-label="Instagram de ${p.nome}"><div class="avatar" data-foto="${foto(`fotos/cena/${slug}.jpg`)}" data-reserva="${foto(`fotos/${slug}.jpg`)}">${p.nome[0]}</div></a>
       ${dado(p.dado)}
+      <span class="efeito" aria-hidden="true"></span>
+      <p class="carimbo" role="status"></p>
     </div>
-    <h4 id="perfil-nome">${p.nome}</h4>
-    <span class="handle">@${p.insta}</span>
-    <a class="go-insta" href="https://www.instagram.com/${p.insta}/" target="_blank" rel="noopener noreferrer">${instaIcon} Insta?</a>
+    <h4 id="perfil-nome" tabindex="-1">${p.nome}</h4>
+    <div class="escolha" role="group" aria-label="Beijo ou mato?">
+      <button class="opcao" type="button" data-escolha="beijo" aria-pressed="false"><span class="emoji" aria-hidden="true">💋</span>Beijo</button>
+      <button class="opcao" type="button" data-escolha="mata" aria-pressed="false"><span class="emoji" aria-hidden="true">🔫</span>Mato</button>
+    </div>
     <button class="again" id="again" type="button">${sorteado ? "Jogar de novo" : "Girar o dado"}</button>
+    <a class="arroba" href="${perfil}" target="_blank" rel="noopener noreferrer">${instaIcon}@${p.insta}</a>
   </div>`;
   reveal.hidden = false;
   dialog.setAttribute("aria-labelledby", "perfil-nome");
   const origem = sorteado ? "dado" : "card";
   medir("perfil", { pessoa: slug, origem });
-  const insta = reveal.querySelector(".go-insta");
-  insta.addEventListener("click", () => medir("insta", { pessoa: slug, origem }));
-  insta.focus();
+  for (const link of reveal.querySelectorAll(".ring, .arroba")) {
+    link.addEventListener("click", () => medir("insta", { pessoa: slug, origem }));
+  }
+  const grupo = reveal.querySelector(".escolha");
+  for (const botao of grupo.querySelectorAll(".opcao")) {
+    botao.addEventListener("click", () => escolher(grupo, botao.dataset.escolha, { pessoa: slug, origem }));
+  }
+  // foco no nome, não num dos botões: no Safari o botão focado ganha o anel e parece que o Beijo já veio escolhido
+  document.getElementById("perfil-nome").focus({ preventScroll: true });
   document.getElementById("again").addEventListener("click", () => {
     reveal.hidden = true;
     dialog.setAttribute("aria-labelledby", "roll-title");
@@ -905,11 +1211,14 @@ dialog.addEventListener("close", () => {
   dialog.setAttribute("aria-labelledby", "roll-title");
 });
 
-document.getElementById("open-roll").addEventListener("click", () => {
+// "Girar o dado" e o dado grande da capa: abrem a mesa e já jogam
+function abrirMesa() {
   reveal.hidden = true;
   dialog.showModal();
-  setTimeout(() => girar("botao"), 250);
-});
+  timer = setTimeout(() => girar("botao"), 250); // no timer: fechar logo em seguida cancela o giro
+}
+document.getElementById("open-roll").addEventListener("click", abrirMesa);
+document.getElementById("palco-dado").addEventListener("click", abrirMesa);
 document.getElementById("close-roll").addEventListener("click", () => dialog.close());
 dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
 table.addEventListener("click", () => girar("mesa"));

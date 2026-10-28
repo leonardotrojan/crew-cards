@@ -25,17 +25,19 @@ test("linhasParaEventos transforma as linhas cruas da API em objetos", () => {
   assert.deepEqual(eventos, [{ id: 1, tipo: "insta", pessoa: "igor" }, { id: 2, tipo: "visita", pessoa: null }]);
 });
 
-test("resumo conta visitantes únicos, visitas, perfis, instas e giros", () => {
+test("resumo conta visitantes únicos, visitas, perfis, instas, giros, beijos e tiros", () => {
   const ev = fabrica();
   const eventos = [
     ev("a", "visita"), ev("a", "visita"), ev("b", "visita"),
     ev("a", "perfil", { pessoa: "igor", origem: "card" }),
     ev("b", "insta", { pessoa: "igor", origem: "card" }),
     ev("b", "giro", { face: 3, origem: "botao" }), ev("b", "giro", { face: 1, origem: "mesa" }),
+    ev("a", "beijo", { pessoa: "igor", origem: "card" }),
+    ev("b", "mata", { pessoa: "seibt", origem: "dado" }), ev("b", "mata", { pessoa: "ian", origem: "dado" }),
     ev("c", "toque", { sup: "pagina", x: 0.5, y: 0.5, alvo: "nada" }),
   ];
-  assert.deepEqual(resumo(eventos), { visitantes: 3, visitas: 3, perfis: 1, instas: 1, giros: 2 });
-  assert.deepEqual(resumo([]), { visitantes: 0, visitas: 0, perfis: 0, instas: 0, giros: 0 });
+  assert.deepEqual(resumo(eventos), { visitantes: 3, visitas: 3, perfis: 1, instas: 1, giros: 2, beijos: 1, tiros: 2 });
+  assert.deepEqual(resumo([]), { visitantes: 0, visitas: 0, perfis: 0, instas: 0, giros: 0, beijos: 0, tiros: 0 });
 });
 
 test("ranking ordena por quem teve mais visitantes únicos abrindo o Insta", () => {
@@ -66,6 +68,20 @@ test("ranking ordena por quem teve mais visitantes únicos abrindo o Insta", () 
   assert.equal(terceiro.conversao, 0);
 });
 
+test("ranking conta beijos e tiros de cada um (cada escolha conta, mesmo vindo do mesmo aparelho)", () => {
+  const ev = fabrica();
+  const eventos = [
+    ev("a", "beijo", { pessoa: "igor", origem: "dado" }),
+    ev("a", "beijo", { pessoa: "igor", origem: "card" }),
+    ev("b", "mata", { pessoa: "igor", origem: "dado" }),
+    ev("b", "mata", { pessoa: "ian", origem: "dado" }),
+  ];
+  const de = slug => ranking(eventos, crew).find(p => p.slug === slug);
+  assert.deepEqual([de("igor").beijos, de("igor").tiros], [2, 1]);
+  assert.deepEqual([de("ian").beijos, de("ian").tiros], [0, 1]);
+  assert.deepEqual([de("seibt").beijos, de("seibt").tiros], [0, 0]);
+});
+
 test("ranking inclui a crew inteira e quem aparecer só nos eventos", () => {
   const ev = fabrica();
   const lista = ranking([ev("a", "insta", { pessoa: "gabriel", origem: "direto" })], crew);
@@ -74,7 +90,7 @@ test("ranking inclui a crew inteira e quem aparecer só nos eventos", () => {
   assert.equal(lista[0].dado, null);
 });
 
-test("rejeição: o dado tirou a pessoa e o convidado girou de novo sem abrir o Insta", () => {
+test("rejeição: o dado tirou a pessoa e o convidado girou de novo sem escolher nem abrir o Insta", () => {
   const ev = fabrica();
   const eventos = [
     ev("a", "perfil", { pessoa: "igor", origem: "dado" }),
@@ -87,6 +103,12 @@ test("rejeição: o dado tirou a pessoa e o convidado girou de novo sem abrir o 
     ev("d", "perfil", { pessoa: "seibt", origem: "dado" }),
     ev("d", "giro", { face: 2, origem: "botao" }), // fechou e girou pelo botão de fora: não conta
     ev("d", "giro", { face: 3, origem: "denovo" }),
+    ev("e", "perfil", { pessoa: "ian", origem: "dado" }),
+    ev("e", "beijo", { pessoa: "ian", origem: "dado" }),
+    ev("e", "giro", { face: 4, origem: "denovo" }), // escolheu beijo: não é rejeição
+    ev("f", "perfil", { pessoa: "seibt", origem: "dado" }),
+    ev("f", "mata", { pessoa: "seibt", origem: "dado" }),
+    ev("f", "giro", { face: 6, origem: "denovo" }), // escolheu mata: também não
   ];
   assert.deepEqual(Object.fromEntries(rejeicoes(eventos)), { igor: 1 });
   assert.equal(ranking(eventos, crew).find(p => p.slug === "igor").rejeicoes, 1);

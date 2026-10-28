@@ -11,7 +11,8 @@ const FACES = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6
 // tela simulada no iframe em cada layout e raio do borrão de cada toque (px da página)
 const TELAS = { "2col": { largura: 390, altura: 844, raio: 18 }, "3col": { largura: 1280, altura: 800, raio: 24 } };
 const NOMES_ALVO = {
-  card: "Cards da crew", girar: "Botão “Girar o dado”", mesa: "Mesa do dado", insta: "Botão do Insta",
+  card: "Cards da crew", girar: "Botão “Girar o dado”", dado: "Dado grande da capa", mesa: "Mesa do dado",
+  beijo: "Beijo 💋", mata: "Mato 🔫", foto: "Foto do perfil (abre o Insta)", insta: "@ do Insta",
   denovo: "Jogar de novo", fechar: "Fechar (×)", fundo: "Fora do pop-up", lua: "Lua 🌙", morcego: "Morcegos 🦇",
   olhos: "Olhos no escuro 👀", nada: "Nada (espaço vazio)",
 };
@@ -125,6 +126,8 @@ function desenharResumo(r) {
   $("k-perfis").textContent = numero.format(r.perfis);
   $("k-instas").textContent = numero.format(r.instas);
   $("k-giros").textContent = numero.format(r.giros);
+  $("k-escolhas").textContent = numero.format(r.beijos + r.tiros);
+  $("k-escolhas-nota").textContent = `💋 ${numero.format(r.beijos)} · 🔫 ${numero.format(r.tiros)}`;
 }
 
 /* ---------- ranking ---------- */
@@ -147,14 +150,18 @@ function anelDe(p) {
   return aneis.get(p.slug);
 }
 
-// duas linhas curtas: de onde vieram os perfis; conversão e rejeições
+// linhas curtas: de onde vieram os perfis; conversão e rejeições; beijos e tiros
 function detalhesDe(p) {
   const perfis = plural(p.perfisCard + p.perfisDado, "perfil", "perfis");
   const conversao = p.conversao === null ? null : `${porcento.format(p.conversao)} de quem viu abriu o Insta`;
   const rejeicoes = p.rejeicoes ? el("span", { class: "junto" }, `💔 ${plural(p.rejeicoes, "rejeição", "rejeições")}`) : null;
+  const escolhas = p.beijos || p.tiros
+    ? el("span", {}, `💋 ${plural(p.beijos, "beijo", "beijos")} · 🔫 ${plural(p.tiros, "tiro", "tiros")}`)
+    : null;
   return [
     el("span", {}, `${perfis} (${numero.format(p.perfisCard)} card · ${numero.format(p.perfisDado)} dado)`),
     conversao || rejeicoes ? el("span", {}, conversao, conversao && rejeicoes ? " · " : null, rejeicoes) : null,
+    escolhas,
   ];
 }
 
@@ -269,7 +276,7 @@ function criarPalco(figura) {
         // sem animação no pop-up (medir no meio do "pop" daria posições tortas) e enfeites parados (gasta menos
         // com três prévias abertas); as fotos seguem animando, senão ficam presas no começo do fade, invisíveis
         doc.head.append(el("style", {}, `dialog, dialog *, dialog::backdrop { animation: none !important; transition: none !important; }
-          .night, .night *, .spark, h1, .go-insta { animation-play-state: paused !important; }`));
+          .night, .night *, .spark, h1, .palco-dado *, .palco-dado::before { animation-play-state: paused !important; }`));
         await doc.fonts?.ready;
         resolve(doc);
       }, { once: true });
@@ -436,8 +443,8 @@ const esperarAtualizacao = async () => { while (carregando) await new Promise(r 
 
 function abrirZerar() {
   $("zerar-texto").textContent = eventos.length
-    ? `Apaga os ${plural(eventos.length, "evento", "eventos")} registrados (visitas, perfis, Insta, giros e toques) pra todo mundo que usa o painel.`
-    : "Apaga todos os eventos registrados (visitas, perfis, Insta, giros e toques) pra todo mundo que usa o painel.";
+    ? `Apaga os ${plural(eventos.length, "evento", "eventos")} registrados (visitas, perfis, Insta, beijos e tiros, giros e toques) pra todo mundo que usa o painel.`
+    : "Apaga todos os eventos registrados (visitas, perfis, Insta, beijos e tiros, giros e toques) pra todo mundo que usa o painel.";
   campoZerar.value = "";
   okZerar.disabled = true;
   erroZerar.hidden = true;

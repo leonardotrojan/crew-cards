@@ -64,7 +64,8 @@
 
   /* ---------- toques (mapa de calor) ---------- */
   // o primeiro seletor que casar com o elemento tocado dá o nome do alvo
-  const ALVOS = [[".card", "card"], ["#open-roll", "girar"], ["#table", "mesa"], [".go-insta", "insta"],
+  const ALVOS = [[".card", "card"], ["#open-roll", "girar"], ["#palco-dado", "dado"], ["#table", "mesa"],
+    ["[data-escolha='beijo']", "beijo"], ["[data-escolha='mata']", "mata"], [".reveal .ring", "foto"], [".arroba", "insta"],
     ["#again", "denovo"], [".close", "fechar"]];
   // enfeites do céu têm pointer-events: none, então o toque é conferido pela posição
   const ENFEITES = [[".moon", "lua"], [".bat", "morcego"], [".eyes", "olhos"]];

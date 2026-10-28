@@ -73,7 +73,7 @@ h1 { margin: 0; max-width: 14ch; font-size: clamp(2.1rem, 7vw, 3.6rem); font-wei
 .fantasma:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
 
 /* ---------- números do topo ---------- */
-.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .kpi {
   display: grid; gap: 6px; align-content: start;
   padding: 16px; background: var(--superficie);
@@ -88,7 +88,7 @@ h1 { margin: 0; max-width: 14ch; font-size: clamp(2.1rem, 7vw, 3.6rem); font-wei
 .kpi.heroi strong { font-size: clamp(3.4rem, 16vw, 5.6rem); letter-spacing: -0.05em; }
 .nota { font-size: .92rem; color: var(--tinta-2); }
 @media (min-width: 760px) {
-  .kpis { grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr)); }
+  .kpis { grid-template-columns: 1.5fr repeat(4, minmax(0, 1fr)); }
   .kpi.heroi { grid-column: auto; }
 }
 
@@ -340,6 +340,7 @@ th, td { padding: 7px 8px; border-bottom: 1px solid var(--linha); }
     <div class="kpi"><span class="rotulo">Perfis abertos</span><strong id="k-perfis">–</strong></div>
     <div class="kpi"><span class="rotulo">Instas abertos</span><strong id="k-instas">–</strong></div>
     <div class="kpi"><span class="rotulo">Giros do dado</span><strong id="k-giros">–</strong></div>
+    <div class="kpi"><span class="rotulo">Beijo ou mata</span><strong id="k-escolhas">–</strong><span class="nota" id="k-escolhas-nota">–</span></div>
   </section>
 
   <section class="bloco bloco-ranking" aria-labelledby="t-ranking">

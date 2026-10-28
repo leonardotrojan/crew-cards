@@ -1,9 +1,12 @@
 # crew-cards
 
-Página da crew: cada um é uma face do dado. Clicar num card abre o perfil da pessoa
-(foto grande + botão pro Instagram), e o botão "Girar o dado" abre uma mesa com um dado 3D
-que sorteia alguém e mostra o mesmo perfil. Tem também [métricas da festa](#métricas-da-festa),
-com um painel fechado por senha.
+Página da crew: cada um é uma face do dado, e o jogo é **Beijo ou Mata**: quem cair no dado, você
+escolhe se beija ou atira com a arma de bebida (aí os dois bebem: quem caiu no dado e quem girou).
+O dado grande da capa (ou o botão "Girar o dado")
+abre uma mesa com um dado 3D que sorteia alguém e mostra o perfil: foto grande e os botões **Beijo**
+e **Mato** (escolheu, tá escolhido; pra trocar, só jogando de novo). O Instagram fica discreto: tocar
+na foto ou no @ pequeno no pé do pop-up. Clicar num card abre o mesmo perfil. Tem também
+[métricas da festa](#métricas-da-festa), com um painel fechado por senha.
 
 | Dado | Nome     | Instagram          |
 |------|----------|--------------------|
@@ -78,14 +81,17 @@ identificador é um id aleatório no `localStorage` do convidado.
 |--------------|------------------------------------------------------------------------|
 | `visita`     | abriu o site                                                           |
 | `perfil`     | abriu o perfil de alguém, pelo card ou pelo dado                       |
-| `insta`      | tocou em "Insta?" (ou deu cmd/ctrl-clique no card)                     |
+| `beijo`      | escolheu **Beijo** no perfil (uma escolha por perfil aberto)           |
+| `mata`       | escolheu **Mato** no perfil (idem)                                     |
+| `insta`      | tocou na foto ou no @ do perfil (ou deu cmd/ctrl-clique no card)       |
 | `giro`       | girou o dado (botão de cima, mesa ou "Jogar de novo"), com a face      |
 | `impaciente` | tocou na mesa com o dado ainda rolando                                 |
 | `toque`      | qualquer toque, com a posição (pro mapa de calor) e onde foi           |
 
 **Painel:** https://qualseunumerodasorte.party/12785e3/ (senha: o secret `PAINEL_SENHA`). Mostra:
+- beijos e tiros: o total no topo e quanto cada um levou de cada, no ranking;
 - quem teve o Insta aberto por mais gente, com conversão e "rejeições" (o dado tirou a pessoa e o
-  convidado girou de novo sem abrir o Insta);
+  convidado girou de novo sem escolher Beijo ou Mato nem abrir o Insta);
 - se o dado é honesto (teste de qui-quadrado), recorde de giros e de impaciência;
 - o mapa de calor por cima do próprio site: página, mesa do dado e perfil, no celular e no computador.
 

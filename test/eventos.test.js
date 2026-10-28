@@ -58,6 +58,27 @@ test("tipo precisa ser texto: array e objeto com toString não passam nem estour
   assert.equal(validarEvento({ tipo: { toString: () => "visita" } }, V, AGORA), null);
 });
 
+test("beijo e mata exigem pessoa da crew e a origem do perfil (card ou dado)", () => {
+  for (const tipo of ["beijo", "mata"]) {
+    assert.deepEqual(
+      validarEvento({ tipo, pessoa: "gabriel", origem: "dado" }, V, AGORA),
+      { ...vazio, ts: AGORA, visitante: V, tipo, pessoa: "gabriel", origem: "dado" });
+    assert.equal(validarEvento({ tipo, pessoa: "gabriel", origem: "card" }, V, AGORA).origem, "card");
+    assert.equal(validarEvento({ tipo, pessoa: "gabriel", origem: "direto" }, V, AGORA), null, `${tipo} direto`);
+    assert.equal(validarEvento({ tipo, pessoa: "fulano", origem: "dado" }, V, AGORA), null, `${tipo} fulano`);
+    assert.equal(validarEvento({ tipo, origem: "dado" }, V, AGORA), null, `${tipo} sem pessoa`);
+  }
+});
+
+test("todo alvo que o metricas.js manda é aceito aqui (senão vira nada no mapa de calor)", () => {
+  const js = readFileSync(new URL("../public/metricas.js", import.meta.url), "utf8");
+  const nomes = [...js.matchAll(/,\s*"([a-z]+)"\]/g)].map(m => m[1]); // entradas [seletor, "nome"] de ALVOS e ENFEITES
+  assert.ok(nomes.includes("beijo") && nomes.includes("lua"), "não achei as listas ALVOS e ENFEITES no metricas.js");
+  for (const alvo of nomes) {
+    assert.equal(validarEvento({ tipo: "toque", sup: "perfil", x: 0.5, y: 0.5, alvo }, V, AGORA).alvo, alvo, `alvo ${alvo}`);
+  }
+});
+
 test("insta aceita as origens card, dado e direto", () => {
   for (const origem of ["card", "dado", "direto"]) {
     assert.equal(validarEvento({ tipo: "insta", pessoa: "seibt", origem }, V, AGORA).origem, origem);
